@@ -336,9 +336,7 @@ If you use OpenScribe in research or academic work, please cite:
 
 ```
 OpenScribe: A Privacy-Conscious Clinical Documentation Assistant
-[Your Name/Organization]
-[Year]
-https://github.com/[your-org]/OpenScribe
+https://github.com/sammargolis/OpenScribe
 ```
 
 For derivative works or forks, please maintain attribution to the original project.
@@ -346,9 +344,9 @@ For derivative works or forks, please maintain attribution to the original proje
 ## Maintainers and Contact
 
 - **Maintainer**: [Your GitHub Handle]
-- **GitHub**: [https://github.com/your-handle](https://github.com/your-handle)
-- **Issues**: [https://github.com/your-org/OpenScribe/issues](https://github.com/your-org/OpenScribe/issues)
-- **Discussions**: [https://github.com/your-org/OpenScribe/discussions](https://github.com/your-org/OpenScribe/discussions)
+- **GitHub**: [https://github.com/sammargolis](https://github.com/sammargolis)
+- **Issues**: [https://github.com/your-org/OpenScribe/issues](https://github.com/sammargolis/OpenScribe/issues)
+- **Discussions**: [https://github.com/your-org/OpenScribe/discussions](https://github.com/sammargolis/OpenScribe/discussions)
 
 For questions, bug reports, or feature requests, please use GitHub Issues or Discussions.
 
