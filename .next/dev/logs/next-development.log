@@ -1,0 +1,19 @@
+[00:00:02.035] Server  WARN     ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 5.0.2
+[00:00:02.039] Server  LOG     
+[00:00:02.039] Server  LOG        We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+[00:00:02.039] Server  LOG        The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+[00:00:02.039] Server  LOG        	- include was updated to add '.next/dev/types/**/*.ts'
+[00:00:02.039] Server  LOG     
+[00:00:02.039] Server  LOG        The following mandatory changes were made to your tsconfig.json:
+
+[00:00:02.039] Server  LOG        	- jsx was set to react-jsx (next.js uses the React automatic runtime)
+[00:00:02.039] Server  LOG     
+[00:00:02.121] Server  LOG      ✓ Ready in 1852ms
+[00:00:22.800] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:23.053] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:23.054] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:00:23.054] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764134071664}
+[00:00:41.733] Server  ERROR   AI generation error: GatewayError: Vercel AI Gateway access failed. If you want to use AI SDK providers directly, use the providers, e.g. @ai-sdk/openai, or register a different global default provider.
+[00:00:41.916] Server  ERROR    ⨯ Error: Failed to generate note: Vercel AI Gateway access failed. If you want to use AI SDK providers directly, use the providers, e.g. @ai-sdk/openai, or register a different global default provider.
+[00:00:42.027] Browser ERROR   Note generation failed: {"digest":"2003407203","environmentName":"Server","name":"Error"}
