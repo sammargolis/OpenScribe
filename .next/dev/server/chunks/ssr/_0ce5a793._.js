@@ -16,44 +16,27 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$ne
 ;
 ;
 async function transcribeAudio(audioBlob, apiKey) {
-    // For demo purposes, we'll simulate transcription
-    // In production, you would use Whisper API with the provided apiKey
-    // Simulate processing time
-    await new Promise((resolve)=>setTimeout(resolve, 2000));
-    // For now, return a sample transcript
-    // In production: send audioBlob to Whisper API with apiKey
-    const sampleTranscript = `
-Doctor: Good morning, how are you feeling today?
-
-Patient: Not great, doctor. I've been having this persistent headache for about a week now.
-
-Doctor: I see. Can you describe the headache? Where is it located and how severe is it?
-
-Patient: It's mostly on the right side of my head, kind of behind my eye. I'd say it's about a 6 or 7 out of 10 on bad days.
-
-Doctor: Does anything make it better or worse?
-
-Patient: It gets worse when I'm looking at screens for too long. Resting in a dark room helps a bit.
-
-Doctor: Any other symptoms? Nausea, sensitivity to light, visual changes?
-
-Patient: Yeah, I've been a bit sensitive to bright lights. No nausea though.
-
-Doctor: Have you been under any unusual stress lately? Any changes in sleep patterns?
-
-Patient: Work has been pretty stressful. I've been sleeping maybe 5-6 hours a night instead of my usual 8.
-
-Doctor: Let me check your blood pressure and do a quick neurological exam.
-
-[Physical exam performed]
-
-Doctor: Your blood pressure is slightly elevated at 135/85. Neurological exam is normal. Based on your symptoms - the unilateral headache, photophobia, and association with stress and sleep deprivation - this appears to be a tension-type headache with some migraine features.
-
-Patient: Is that serious?
-
-Doctor: It's very manageable. I'd recommend starting with lifestyle modifications - prioritizing sleep, taking regular breaks from screens, and stress management. I'll also prescribe a mild pain reliever for acute episodes. If it doesn't improve in two weeks, we'll discuss preventive options.
-  `.trim();
-    return sampleTranscript;
+    try {
+        // Check if we have a Whisper API URL configured (for Docker setup)
+        const whisperUrl = process.env.WHISPER_API_URL;
+        if (!whisperUrl) {
+            throw new Error("Whisper API URL is not configured");
+        }
+        const response = await fetch(`${whisperUrl}/v1/audio/transcriptions`, {
+            method: "POST",
+            body: audioBlob
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Whisper API error:", errorText);
+            throw new Error(`Whisper API failed: ${response.status} ${errorText}`);
+        }
+        const data = await response.json();
+        return data.text;
+    } catch (error) {
+        console.error("Transcription error:", error);
+        throw new Error("Failed to transcribe audio");
+    }
 }
 async function generateClinicalNote(params) {
     const { transcript, patient_name, visit_reason, apiKey } = params;

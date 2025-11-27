@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EncounterStatus {
+  idle
+  recording
+  processing
+  transcription_failed
+  note_generation_failed
+  completed
+}
+
+model Encounter {
+  id                String          @id @default(uuid())
+  patient_name      String
+  patient_id        String
+  visit_reason      String
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+  transcript_text   String          @default("")
+  note_text         String          @default("")
+  status            EncounterStatus @default(idle)
+  language          String          @default("en")
+  recording_duration Int?
+
+  @@map("encounters")
+}
+

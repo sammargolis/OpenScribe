@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, FileText, Clock, Plus } from "lucide-react"
+import { Search, FileText, Clock, Plus, Trash2 } from "lucide-react"
 import { useState, useMemo } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { ApiKeyDialog } from "@/components/api-key-dialog"
@@ -14,11 +14,19 @@ interface EncounterListProps {
   encounters: Encounter[]
   selectedId: string | null
   onSelect: (encounter: Encounter) => void
+  onDelete?: (id: string) => void
   onNewEncounter: () => void
   disabled?: boolean
 }
 
-export function EncounterList({ encounters, selectedId, onSelect, onNewEncounter, disabled }: EncounterListProps) {
+export function EncounterList({
+  encounters,
+  selectedId,
+  onSelect,
+  onDelete,
+  onNewEncounter,
+  disabled,
+}: EncounterListProps) {
   const [search, setSearch] = useState("")
 
   const filtered = useMemo(() => {
@@ -38,7 +46,7 @@ export function EncounterList({ encounters, selectedId, onSelect, onNewEncounter
         <Button
           onClick={onNewEncounter}
           disabled={disabled}
-          className="w-full justify-start gap-2 rounded-xl bg-foreground text-background hover:bg-foreground/90"
+          className="w-full justify-start gap-2 rounded-xl bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           New Encounter
@@ -70,38 +78,53 @@ export function EncounterList({ encounters, selectedId, onSelect, onNewEncounter
         ) : (
           <div className="p-3">
             {filtered.map((encounter) => (
-              <button
-                key={encounter.id}
-                onClick={() => onSelect(encounter)}
-                disabled={disabled}
-                className={cn(
-                  "mb-1 w-full rounded-xl p-3 text-left transition-colors",
-                  "hover:bg-sidebar-accent",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  "disabled:pointer-events-none disabled:opacity-50",
-                  selectedId === encounter.id && "bg-sidebar-accent",
-                )}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {encounter.patient_name || "Unknown patient"}
-                    </p>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {encounter.visit_reason || "No reason specified"}
-                    </p>
+              <div key={encounter.id} className="group relative mb-1">
+                <button
+                  onClick={() => onSelect(encounter)}
+                  disabled={disabled}
+                  className={cn(
+                    "w-full rounded-xl p-3 text-left transition-colors",
+                    "hover:bg-sidebar-accent",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "disabled:pointer-events-none disabled:opacity-50",
+                    selectedId === encounter.id && "bg-sidebar-accent",
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {encounter.patient_name || "Unknown patient"}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {encounter.visit_reason || "No reason specified"}
+                      </p>
+                    </div>
+                    <StatusIndicator status={encounter.status} />
                   </div>
-                  <StatusIndicator status={encounter.status} />
-                </div>
-                <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  <span>
-                    {formatDistanceToNow(new Date(encounter.created_at), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                </div>
-              </button>
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    <span>
+                      {formatDistanceToNow(new Date(encounter.created_at), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  </div>
+                </button>
+                {onDelete && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (confirm("Are you sure you want to delete this encounter?")) {
+                        onDelete(encounter.id)
+                      }
+                    }}
+                    className="absolute right-2 top-2 hidden rounded-md p-1.5 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground group-hover:block"
+                    title="Delete encounter"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}

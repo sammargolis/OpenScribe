@@ -18,9 +18,22 @@ export function NewEncounterForm({ onStart, onCancel }: NewEncounterFormProps) {
   const [patientName, setPatientName] = useState("")
   const [patientId, setPatientId] = useState("")
   const [visitReason, setVisitReason] = useState("")
+  const [error, setError] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!patientName.trim()) {
+      setError("Patient name is required")
+      return
+    }
+    
+    if (!visitReason.trim()) {
+      setError("Visit reason is required")
+      return
+    }
+
+    setError("")
     onStart({
       patient_name: patientName,
       patient_id: patientId,
@@ -33,15 +46,20 @@ export function NewEncounterForm({ onStart, onCancel }: NewEncounterFormProps) {
       <h2 className="text-xl font-medium text-foreground mb-6 text-center">New Interview</h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {error && <div className="text-sm text-destructive text-center font-medium">{error}</div>}
+        
         <div className="space-y-2">
           <Label htmlFor="patient-name" className="text-sm text-muted-foreground">
-            Patient Name
+            Patient Name <span className="text-destructive">*</span>
           </Label>
           <Input
             id="patient-name"
-            placeholder="Enter patient name (optional)"
+            placeholder="Enter patient name"
             value={patientName}
-            onChange={(e) => setPatientName(e.target.value)}
+            onChange={(e) => {
+              setPatientName(e.target.value)
+              if (error) setError("")
+            }}
             className="rounded-xl border-border bg-secondary"
           />
         </div>
@@ -61,13 +79,16 @@ export function NewEncounterForm({ onStart, onCancel }: NewEncounterFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="visit-reason" className="text-sm text-muted-foreground">
-            Visit Reason
+            Visit Reason <span className="text-destructive">*</span>
           </Label>
           <Textarea
             id="visit-reason"
-            placeholder="Brief reason for visit (optional)"
+            placeholder="Brief reason for visit"
             value={visitReason}
-            onChange={(e) => setVisitReason(e.target.value)}
+            onChange={(e) => {
+              setVisitReason(e.target.value)
+              if (error) setError("")
+            }}
             className="min-h-[80px] resize-none rounded-xl border-border bg-secondary"
           />
         </div>
@@ -77,11 +98,15 @@ export function NewEncounterForm({ onStart, onCancel }: NewEncounterFormProps) {
             type="button"
             variant="ghost"
             onClick={onCancel}
-            className="flex-1 rounded-full text-muted-foreground hover:text-foreground"
+            className="flex-1 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
           >
             Cancel
           </Button>
-          <Button type="submit" className="flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90">
+          <Button 
+            type="submit" 
+            className="flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+            disabled={!patientName.trim() || !visitReason.trim()}
+          >
             <Mic className="mr-2 h-4 w-4" />
             Start Recording
           </Button>

@@ -2,49 +2,63 @@
 
 import { generateText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
+import { SYSTEM_PROMPT, generateUserPrompt } from "@/app/utils/prompts"
+import fs from "fs/promises"
+import path from "path"
 
 export async function transcribeAudio(audioBlob: Blob, apiKey: string | null): Promise<string> {
-  // For demo purposes, we'll simulate transcription
-  // In production, you would use Whisper API with the provided apiKey
+  try {
+    // Check if we have a Whisper API URL configured (for Docker setup)
+    const whisperUrl = process.env.WHISPER_API_URL
+    
+    if(!whisperUrl) {
+      throw new Error("Whisper API URL is not configured")
+    }
 
-  // Simulate processing time
-  await new Promise((resolve) => setTimeout(resolve, 2000))
+    const formData = new FormData()
+    formData.append("file", audioBlob, "audio.webm")
+    formData.append("model", "base")
+    formData.append("response_format", "text")
 
-  // For now, return a sample transcript
-  // In production: send audioBlob to Whisper API with apiKey
-  const sampleTranscript = `
-Doctor: Good morning, how are you feeling today?
+    const response = await fetch(`${whisperUrl}/v1/audio/transcriptions`, {
+      method: "POST",
+      body: formData,
+    })
 
-Patient: Not great, doctor. I've been having this persistent headache for about a week now.
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("Whisper API error:", errorText)
+      throw new Error(`Whisper API failed: ${response.status} ${errorText}`)
+    }
 
-Doctor: I see. Can you describe the headache? Where is it located and how severe is it?
+    // If response_format is 'text', it returns plain text
+    // The Whisper API response format handling might differ slightly between implementations
+    // fedirz/faster-whisper-server with response_format='text' returns plain text.
+    // If it returns JSON despite 'text', we handle both.
+    let text = ""
+    const contentType = response.headers.get("content-type")
+    if (contentType && contentType.includes("application/json")) {
+      const data = await response.json()
+      text = data.text
+    } else {
+      text = await response.text()
+    }
+    
+    text = text.trim()
 
-Patient: It's mostly on the right side of my head, kind of behind my eye. I'd say it's about a 6 or 7 out of 10 on bad days.
+    // Save transcript to local file
+    const transcriptsDir = path.join(process.cwd(), "transcripts")
+    await fs.mkdir(transcriptsDir, { recursive: true })
+    const filename = `transcript-${Date.now()}.txt`
+    await fs.writeFile(path.join(transcriptsDir, filename), text, "utf-8")
+    console.log(`Transcript saved to ${filename}`)
 
-Doctor: Does anything make it better or worse?
+    return text
 
-Patient: It gets worse when I'm looking at screens for too long. Resting in a dark room helps a bit.
-
-Doctor: Any other symptoms? Nausea, sensitivity to light, visual changes?
-
-Patient: Yeah, I've been a bit sensitive to bright lights. No nausea though.
-
-Doctor: Have you been under any unusual stress lately? Any changes in sleep patterns?
-
-Patient: Work has been pretty stressful. I've been sleeping maybe 5-6 hours a night instead of my usual 8.
-
-Doctor: Let me check your blood pressure and do a quick neurological exam.
-
-[Physical exam performed]
-
-Doctor: Your blood pressure is slightly elevated at 135/85. Neurological exam is normal. Based on your symptoms - the unilateral headache, photophobia, and association with stress and sleep deprivation - this appears to be a tension-type headache with some migraine features.
-
-Patient: Is that serious?
-
-Doctor: It's very manageable. I'd recommend starting with lifestyle modifications - prioritizing sleep, taking regular breaks from screens, and stress management. I'll also prescribe a mild pain reliever for acute episodes. If it doesn't improve in two weeks, we'll discuss preventive options.
-  `.trim()
-
-  return sampleTranscript
+  } catch (error) {
+    console.error("Transcription error:", error)
+    throw new Error("Failed to transcribe audio")
+  }
 }
 
 export async function generateClinicalNote(params: {
@@ -55,52 +69,18 @@ export async function generateClinicalNote(params: {
 }): Promise<string> {
   const { transcript, patient_name, visit_reason, apiKey } = params
 
-  const systemPrompt = `You are a clinical documentation assistant that converts patient encounter transcripts into structured clinical notes.
-
-IMPORTANT INSTRUCTIONS:
-- Output ONLY plain text in the exact format shown below
-- Do NOT use JSON, markdown code blocks, or any special formatting
-- Use ONLY information explicitly stated in the transcript
-- If a section has no relevant information, write "Not discussed"
-- Use professional medical terminology while keeping notes concise
-- This is a DRAFT that requires clinician review
-
-OUTPUT FORMAT (follow exactly):
-
-Chief Complaint:
-[Primary reason for visit in 1-2 sentences]
-
-HPI:
-[History of present illness - onset, duration, character, severity, modifying factors]
-
-ROS:
-[Review of systems - symptoms mentioned, organized by system]
-
-Physical Exam:
-[Any exam findings mentioned, or "Not documented" if none]
-
-Assessment:
-[Clinical assessment/diagnosis mentioned by clinician]
-
-Plan:
-[Treatment plan discussed with patient]`
-
-  const userPrompt = `Convert this clinical encounter into a structured note.
-
-Patient Name: ${patient_name || "Not provided"}
-Visit Reason: ${visit_reason || "Not provided"}
-
-TRANSCRIPT:
-${transcript}
-
-Generate the clinical note now, following the exact format specified.`
+  const userPrompt = generateUserPrompt({
+    patient_name,
+    visit_reason,
+    transcript,
+  })
 
   try {
     if (apiKey) {
       const openai = createOpenAI({ apiKey })
       const { text } = await generateText({
         model: openai("gpt-4o"),
-        system: systemPrompt,
+        system: SYSTEM_PROMPT,
         prompt: userPrompt,
       })
       return text
@@ -108,7 +88,7 @@ Generate the clinical note now, following the exact format specified.`
       // Fallback to AI Gateway (no API key needed)
       const { text } = await generateText({
         model: "openai/gpt-4o",
-        system: systemPrompt,
+        system: SYSTEM_PROMPT,
         prompt: userPrompt,
       })
       return text

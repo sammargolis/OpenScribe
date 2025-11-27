@@ -1,0 +1,80 @@
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: openscribe-database
+    environment:
+      POSTGRES_USER: openscribe
+      POSTGRES_PASSWORD: openscribe_password
+      POSTGRES_DB: openscribe_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openscribe -d openscribe_db"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+    networks:
+      - openscribe-network
+
+  whisper:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: openscribe-whisper
+    restart: unless-stopped
+    ports:
+      - "9000:8000"
+    environment:
+      - WHISPER__MODEL=base
+      - WHISPER__INFERENCE_DEVICE=cpu
+    volumes:
+      - whisper_cache:/root/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - openscribe-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openscribe-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://openscribe:openscribe_password@database:5432/openscribe_db
+      - NODE_ENV=production
+      - WHISPER_API_URL=http://whisper:8000
+    depends_on:
+      database:
+        condition: service_healthy
+      whisper:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - openscribe-network
+    entrypoint: >
+      sh -c "
+        echo '🔄 Step 1: Waiting for database to be ready...' &&
+        sleep 2 &&
+        echo '🔄 Step 2: Running database migrations...' &&
+        npx prisma migrate deploy || npx prisma db push &&
+        echo '✅ Step 3: Database migrations completed!' &&
+        echo '🚀 Step 4: Starting frontend server...' &&
+        node server.js
+      "
+
+volumes:
+  postgres_data:
+  whisper_cache:
+
+networks:
+  openscribe-network:
+    driver: bridge

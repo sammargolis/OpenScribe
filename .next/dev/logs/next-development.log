@@ -1,19 +1,675 @@
-[00:00:02.035] Server  WARN     ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 5.0.2
-[00:00:02.039] Server  LOG     
-[00:00:02.039] Server  LOG        We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
-[00:00:02.039] Server  LOG        The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+[00:00:00.605] Server  WARN     ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 5.0.2
+[00:00:00.705] Server  LOG      ✓ Ready in 470ms
+[00:00:28.234] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:28.442] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:00:28.446] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:00:28.510] Server  ERROR   Error fetching encounters: PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
 
-[00:00:02.039] Server  LOG        	- include was updated to add '.next/dev/types/**/*.ts'
-[00:00:02.039] Server  LOG     
-[00:00:02.039] Server  LOG        The following mandatory changes were made to your tsconfig.json:
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
 
-[00:00:02.039] Server  LOG        	- jsx was set to react-jsx (next.js uses the React automatic runtime)
-[00:00:02.039] Server  LOG     
-[00:00:02.121] Server  LOG      ✓ Ready in 1852ms
-[00:00:22.800] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:23.053] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:23.054] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:23.054] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764134071664}
-[00:00:41.733] Server  ERROR   AI generation error: GatewayError: Vercel AI Gateway access failed. If you want to use AI SDK providers directly, use the providers, e.g. @ai-sdk/openai, or register a different global default provider.
-[00:00:41.916] Server  ERROR    ⨯ Error: Failed to generate note: Vercel AI Gateway access failed. If you want to use AI SDK providers directly, use the providers, e.g. @ai-sdk/openai, or register a different global default provider.
-[00:00:42.027] Browser ERROR   Note generation failed: {"digest":"2003407203","environmentName":"Server","name":"Error"}
+Please make sure your database server is running at `localhost:5432`.
+[00:00:28.623] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:28.623] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:00:28.623] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764221891898}
+[00:00:28.623] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:02:06.561] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:06.626] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:02:06.679] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:02:06.679] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:02:06.679] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764221990052}
+[00:02:14.492] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:14.536] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:02:14.649] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:02:14.649] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:02:14.649] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764221998021}
+[00:02:21.200] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:02:58.681] Server  LOG     prisma:query "SELECT 1"
+[00:02:58.684] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:03:00.242] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:03:06.702] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:03:11.034] Server  LOG     prisma:query "INSERT INTO \"public\".\"encounters\" (\"id\",\"patient_name\",\"patient_id\",\"visit_reason\",\"created_at\",\"updated_at\",\"transcript_text\",\"note_text\",\"status\",\"language\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,CAST($9::text AS \"public\".\"EncounterStatus\"),$10) RETURNING \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\""
+[00:03:11.216] Browser ERROR   Failed to start recording: {}
+[00:03:12.561] Server  LOG     prisma:query "INSERT INTO \"public\".\"encounters\" (\"id\",\"patient_name\",\"patient_id\",\"visit_reason\",\"created_at\",\"updated_at\",\"transcript_text\",\"note_text\",\"status\",\"language\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,CAST($9::text AS \"public\".\"EncounterStatus\"),$10) RETURNING \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\""
+[00:03:12.716] Browser ERROR   Failed to start recording: {}
+[00:03:13.065] Server  LOG     prisma:query "INSERT INTO \"public\".\"encounters\" (\"id\",\"patient_name\",\"patient_id\",\"visit_reason\",\"created_at\",\"updated_at\",\"transcript_text\",\"note_text\",\"status\",\"language\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,CAST($9::text AS \"public\".\"EncounterStatus\"),$10) RETURNING \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\""
+[00:03:13.224] Browser ERROR   Failed to start recording: {}
+[00:03:13.375] Server  LOG     prisma:query "INSERT INTO \"public\".\"encounters\" (\"id\",\"patient_name\",\"patient_id\",\"visit_reason\",\"created_at\",\"updated_at\",\"transcript_text\",\"note_text\",\"status\",\"language\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,CAST($9::text AS \"public\".\"EncounterStatus\"),$10) RETURNING \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\""
+[00:03:13.567] Browser ERROR   Failed to start recording: {}
+[00:03:15.104] Server  LOG     prisma:error "Error in PostgreSQL connection: Error { kind: Closed, cause: None }"
+[00:03:18.456] Server  LOG     prisma:query "SELECT 1"
+[00:03:18.460] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:18.461] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:18.531] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:18.646] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:21.489] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:21.494] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:21.676] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:21.867] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:46.824] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:46.824] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:46.865] Server  LOG      ✓ Compiled in 60ms
+[00:03:47.018] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:47.045] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:47.068] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:47.069] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:47.118] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:47.125] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:47.126] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:47.158] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:47.804] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:47.805] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:47.805] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222090540}
+[00:03:47.805] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:47.811] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:47.811] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:47.811] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222090565}
+[00:03:47.811] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:48.418] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:48.421] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:48.594] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:48.594] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:48.637] Server  LOG      ✓ Compiled in 0ms
+[00:03:48.692] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:48.736] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:48.756] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:48.757] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:48.799] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:48.833] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:48.834] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:48.875] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:49.809] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:49.809] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:49.809] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222092218}
+[00:03:49.809] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:49.809] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:49.809] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:49.809] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222092314}
+[00:03:49.809] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:50.229] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:50.232] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:50.321] Server  LOG      ✓ Compiled in 26ms
+[00:03:50.472] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:50.485] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:50.510] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:50.511] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:50.552] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:50.563] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:50.564] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:50.594] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:50.804] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:50.804] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:50.804] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222093984}
+[00:03:50.804] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:50.808] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:50.808] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:50.808] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222093997}
+[00:03:50.808] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:52.014] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:52.102] Server  LOG      ✓ Compiled in 132ms
+[00:03:52.141] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:52.232] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:52.257] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:52.283] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:52.283] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:52.320] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:52.332] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:52.333] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:52.364] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:52.805] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:52.805] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:52.805] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222095755}
+[00:03:52.805] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:52.809] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:52.809] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:52.809] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222095778}
+[00:03:52.809] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:53.602] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:53.603] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:53.695] Server  LOG      ✓ Compiled in 27ms
+[00:03:53.825] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:53.860] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:53.878] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:53.879] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:53.913] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:53.940] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:53.941] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:53.976] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:54.804] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:54.804] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:54.804] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222097357}
+[00:03:54.804] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:54.809] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:54.809] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:54.809] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222097418}
+[00:03:54.809] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:55.313] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:55.317] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:55.409] Server  LOG      ✓ Compiled in 35ms
+[00:03:55.539] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:55.566] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:55.589] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:55.591] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:55.628] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:55.634] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:55.634] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:55.665] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:55.803] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:55.803] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:55.803] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222099075}
+[00:03:55.803] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:55.803] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:55.803] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:55.803] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222099062}
+[00:03:55.803] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:57.021] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:57.024] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:57.111] Server  LOG      ✓ Compiled in 24ms
+[00:03:57.223] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:57.252] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:57.271] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:57.271] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:57.305] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:57.327] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:57.328] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:57.362] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:57.809] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:57.810] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:57.810] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222100743}
+[00:03:57.810] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:57.810] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:57.810] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:57.810] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222100806}
+[00:03:57.810] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:58.840] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:58.935] Server  LOG      ✓ Compiled in 23ms
+[00:03:58.964] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:03:59.050] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:59.079] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:59.099] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:59.099] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:59.137] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:59.143] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:59.144] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:03:59.175] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:59.805] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:59.810] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:59.810] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222102571}
+[00:03:59.810] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:03:59.810] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:59.810] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:59.810] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222102606}
+[00:03:59.810] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:04:00.555] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:04:00.558] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:04:00.649] Server  LOG      ✓ Compiled in 24ms
+[00:04:00.768] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:00.795] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:00.836] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:00.836] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:04:00.869] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:04:00.874] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:00.875] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:04:00.910] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:04:01.803] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:04:01.803] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:04:01.803] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222104308}
+[00:04:01.803] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:04:01.806] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:04:01.806] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:04:01.806] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222104306}
+[00:04:01.806] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:04:02.268] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:04:02.270] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:04:02.361] Server  LOG      ✓ Compiled in 24ms
+[00:04:02.487] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:02.519] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:02.539] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:02.540] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:04:02.572] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:04:02.595] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:02.596] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:04:02.631] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:04:02.803] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:04:02.803] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:04:02.803] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222106010}
+[00:04:02.803] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:04:02.806] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:04:02.806] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:04:02.806] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222106074}
+[00:04:02.806] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:12:33.534] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:33.593] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:12:33.670] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:12:33.670] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:12:33.670] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222617032}
+[00:12:40.690] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:40.732] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:12:40.853] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:12:40.853] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:12:40.853] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764222624215}
+[00:12:50.869] Server  LOG     prisma:query "SELECT 1"
+[00:12:50.874] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:12:56.530] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:13:40.711] Server  LOG     prisma:error "Error in PostgreSQL connection: Error { kind: Closed, cause: None }"
+[00:13:44.614] Server  LOG     prisma:query "SELECT 1"
+[00:13:44.621] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166\n\n  75 ;\n  76 async function GET() {\n  77     try {\n→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.findMany(\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:44.656] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:13:44.725] Server  ERROR   Error fetching encounters: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__7e8386be._.js:78:166
+
+  75 ;
+  76 async function GET() {
+  77     try {
+→ 78         const encounters = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.findMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:13:44.843] Browser ERROR   uncaughtError: TypeError: encounters.find is not a function
+[00:22:15.044] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:22:15.104] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:22:15.179] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:22:15.179] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:22:15.179] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764223198540}
+[00:23:08.588] Server  LOG     prisma:query "SELECT 1"
+[00:23:08.589] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:24:30.937] Server  LOG      ✓ Compiled in 83ms
+[00:24:32.555] Server  LOG      ✓ Compiled in 66ms
+[00:24:33.865] Server  LOG     prisma:query "SELECT 1"
+[00:24:33.873] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:24:34.342] Server  LOG      ✓ Compiled in 107ms
+[00:24:46.628] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:24:46.652] Server  LOG      ✓ Compiled in 27ms
+[00:24:48.167] Server  LOG      ✓ Compiled in 28ms
+[00:24:49.651] Server  LOG      ✓ Compiled in 22ms
+[00:25:05.007] Server  LOG     prisma:query "SELECT 1"
+[00:25:05.009] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:25:14.014] Server  LOG      ✓ Compiled in 45ms
+[00:25:15.677] Server  LOG      ✓ Compiled in 29ms
+[00:25:17.496] Server  LOG      ✓ Compiled in 27ms
+[00:25:34.724] Server  LOG     prisma:query "SELECT 1"
+[00:25:34.725] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:25:46.866] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:25:51.294] Server  WARN    Error: Route "/api/encounters/[id]" used `params.id`. `params` is a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+[00:25:51.302] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.update()` invocation in\n/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__18c7de79._.js:105:165\n\n  102 async function PATCH(request, { params }) {\n  103     try {\n  104         const body = await request.json();\n→ 105         const encounter = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__[\"prisma\"].encounter.update({\n                where: {\n                  id: undefined,\n              ?   AND?: EncounterWhereInput | EncounterWhereInput[],\n              ?   OR?: EncounterWhereInput[],\n              ?   NOT?: EncounterWhereInput | EncounterWhereInput[],\n              ?   patient_name?: StringFilter | String,\n              ?   patient_id?: StringFilter | String,\n              ?   visit_reason?: StringFilter | String,\n              ?   created_at?: DateTimeFilter | DateTime,\n              ?   updated_at?: DateTimeFilter | DateTime,\n              ?   transcript_text?: StringFilter | String,\n              ?   note_text?: StringFilter | String,\n              ?   status?: EnumEncounterStatusFilter | EncounterStatus,\n              ?   language?: StringFilter | String,\n              ?   recording_duration?: IntNullableFilter | Int | Null\n                },\n                data: {\n                  note_text: \"Chief Complaint:\\nasd\\n\\n\\nHPI:\\nNot documented\\n\\nROS:\\nNot discussed\\n\\nPhysical Exam:\\nNot performed\\n\\nAssessment:\\nNot documented\\n\\nPlan:\\nNot documented\",\n                  updated_at: new Date(\"2025-11-27T06:03:34.757Z\")\n                }\n              })\n\nArgument `where` of type EncounterWhereUniqueInput needs at least one of `id` arguments. Available options are marked with ?."
+[00:25:51.303] Server  ERROR   file:///Users/saikrishna/misc/OpenScribe/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+[00:25:51.377] Server  ERROR   Error updating encounter: PrismaClientValidationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.update()` invocation in
+/Users/saikrishna/misc/OpenScribe/.next/dev/server/chunks/[root-of-the-server]__18c7de79._.js:105:165
+
+  102 async function PATCH(request, { params }) {
+  103     try {
+  104         const body = await request.json();
+→ 105         const encounter = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].encounter.update({
+                where: {
+                  id: undefined,
+              ?   AND?: EncounterWhereInput | EncounterWhereInput[],
+              ?   OR?: EncounterWhereInput[],
+              ?   NOT?: EncounterWhereInput | EncounterWhereInput[],
+              ?   patient_name?: StringFilter | String,
+              ?   patient_id?: StringFilter | String,
+              ?   visit_reason?: StringFilter | String,
+              ?   created_at?: DateTimeFilter | DateTime,
+              ?   updated_at?: DateTimeFilter | DateTime,
+              ?   transcript_text?: StringFilter | String,
+              ?   note_text?: StringFilter | String,
+              ?   status?: EnumEncounterStatusFilter | EncounterStatus,
+              ?   language?: StringFilter | String,
+              ?   recording_duration?: IntNullableFilter | Int | Null
+                },
+                data: {
+                  note_text: "Chief Complaint:\nasd\n\n\nHPI:\nNot documented\n\nROS:\nNot discussed\n\nPhysical Exam:\nNot performed\n\nAssessment:\nNot documented\n\nPlan:\nNot documented",
+                  updated_at: new Date("2025-11-27T06:03:34.757Z")
+                }
+              })
+
+Argument `where` of type EncounterWhereUniqueInput needs at least one of `id` arguments. Available options are marked with ?.
+[00:25:51.380] Server  LOG     prisma:query "SELECT 1"
+[00:25:51.387] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:28:52.370] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:28:54.241] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:36:28.419] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:39:16.864] Server  LOG     prisma:query "SELECT 1"
+[00:39:16.885] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:43:45.186] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[00:43:59.874] Server  LOG     prisma:query "SELECT \"public\".\"encounters\".\"id\", \"public\".\"encounters\".\"patient_name\", \"public\".\"encounters\".\"patient_id\", \"public\".\"encounters\".\"visit_reason\", \"public\".\"encounters\".\"created_at\", \"public\".\"encounters\".\"updated_at\", \"public\".\"encounters\".\"transcript_text\", \"public\".\"encounters\".\"note_text\", \"public\".\"encounters\".\"status\"::text, \"public\".\"encounters\".\"language\", \"public\".\"encounters\".\"recording_duration\" FROM \"public\".\"encounters\" WHERE 1=1 ORDER BY \"public\".\"encounters\".\"created_at\" DESC OFFSET $1"
+[01:09:31.402] Server  LOG      ✓ Compiled in 137ms
+[01:09:32.291] Server  LOG      ✓ Compiled in 28ms
+[01:09:34.803] Browser ERROR   ./app/actions.ts:13:5
+Parsing ecmascript source code failed
+  11 |     if
+  12 |
+> 13 |     if (whisperUrl) {
+     |     ^^
+  14 |       console.log("Using local Whisper service at:", whisperUrl)
+  15 |       const formData = new FormData()
+  16 |       // Provide a filename so the server knows the extension/type
+
+Expected '(', got 'if'
+[01:09:34.803] Browser ERROR   ./app/actions.ts:13:5
+Parsing ecmascript source code failed
+  11 |     if
+  12 |
+> 13 |     if (whisperUrl) {
+     |     ^^
+  14 |       console.log("Using local Whisper service at:", whisperUrl)
+  15 |       const formData = new FormData()
+  16 |       // Provide a filename so the server knows the extension/type
+
+Expected '(', got 'if'
+[01:09:34.803] Browser ERROR   ./app/actions.ts:13:5
+Parsing ecmascript source code failed
+  11 |     if 
+  12 |
+> 13 |     if (whisperUrl) {
+     |     ^^
+  14 |       console.log("Using local Whisper service at:", whisperUrl)
+  15 |       const formData = new FormData()
+  16 |       // Provide a filename so the server knows the extension/type
+
+Expected '(', got 'if'
+[01:09:34.803] Browser ERROR   ./app/actions.ts:11:8
+Parsing ecmascript source code failed
+   9 |     const whisperUrl = process.env.WHISPER_API_URL
+  10 |     
+> 11 |     if n
+     |        ^
+  12 |
+  13 |     if (whisperUrl) {
+  14 |       console.log("Using local Whisper service at:", whisperUrl)
+
+Expected '(', got 'n'
+[01:09:34.803] Browser ERROR   ./app/actions.ts:13:5
+Parsing ecmascript source code failed
+  11 |     if 
+  12 |
+> 13 |     if (whisperUrl) {
+     |     ^^
+  14 |       console.log("Using local Whisper service at:", whisperUrl)
+  15 |       const formData = new FormData()
+  16 |       // Provide a filename so the server knows the extension/type
+
+Expected '(', got 'if'
+[01:09:34.803] Browser ERROR   ./app/actions.ts:13:5
+Parsing ecmascript source code failed
+  11 |     if
+  12 |
+> 13 |     if (whisperUrl) {
+     |     ^^
+  14 |       console.log("Using local Whisper service at:", whisperUrl)
+  15 |       const formData = new FormData()
+  16 |       // Provide a filename so the server knows the extension/type
+
+Expected '(', got 'if'
+[01:09:34.803] Browser ERROR   ./app/actions.ts:11:8
+Parsing ecmascript source code failed
+   9 |     const whisperUrl = process.env.WHISPER_API_URL
+  10 |     
+> 11 |     if()
+     |        ^
+  12 |
+  13 |     if (whisperUrl) {
+  14 |       console.log("Using local Whisper service at:", whisperUrl)
+
+Expression expected
+[01:09:36.802] Browser ERROR   ./app/actions.ts:11:9
+Parsing ecmascript source code failed
+   9 |     const whisperUrl = process.env.WHISPER_API_URL
+  10 |     
+> 11 |     if(!)
+     |         ^
+  12 |
+  13 |     if (whisperUrl) {
+  14 |       console.log("Using local Whisper service at:", whisperUrl)
+
+Expression expected
+[01:09:36.802] Browser ERROR   ./app/actions.ts:88:1
+Parsing ecmascript source code failed
+  86 | }
+  87 |
+> 88 | export async function generateClinicalNote(params: {
+     | ^
+  89 |   transcript: string
+  90 |   patient_name: string
+  91 |   visit_reason: string
+
+Expected a semicolon
+[01:09:37.802] Browser ERROR   ./app/actions.ts:76:5
+Parsing ecmascript source code failed
+  74 |
+  75 |     return sampleTranscript
+> 76 |   } catch (error) {
+     |     ^^^^^
+  77 |     console.error("Transcription error:", error)
+  78 |     throw new Error("Failed to transcribe audio")
+  79 |   }
+
+Expected a semicolon
+[01:09:47.986] Server  LOG      ✓ Compiled in 22ms
+[01:11:28.449] Server  LOG      ✓ Compiled in 56ms

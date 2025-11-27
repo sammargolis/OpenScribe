@@ -6087,7 +6087,7 @@ var EntryStatus = /*#__PURE__*/ function(EntryStatus) {
     EntryStatus[EntryStatus["Rejected"] = 3] = "Rejected";
     return EntryStatus;
 }({});
-const isOutputExportMode = ("TURBOPACK compile-time value", "development") === 'production' && ("TURBOPACK compile-time value", void 0) === 'export';
+const isOutputExportMode = ("TURBOPACK compile-time value", "development") === 'production' && ("TURBOPACK compile-time value", "standalone") === 'export';
 const MetadataOnlyRequestTree = [
     '',
     {},

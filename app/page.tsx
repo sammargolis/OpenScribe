@@ -23,7 +23,7 @@ type ViewState =
 type StepStatus = "pending" | "in-progress" | "done" | "failed"
 
 export default function HomePage() {
-  const { encounters, addEncounter, updateEncounter } = useEncounters()
+  const { encounters, addEncounter, updateEncounter, deleteEncounter } = useEncounters()
   const { apiKey, isConfigured } = useApiKey()
   const {
     isRecording,
@@ -96,6 +96,7 @@ export default function HomePage() {
     setTranscriptionStatus("in-progress")
     let transcript: string
     try {
+      // Use provided API key or null (server will check environment variable)
       transcript = await transcribeAudio(audioBlob, apiKey)
       await updateEncounter(encounterId, { transcript_text: transcript })
       setTranscriptionStatus("done")
@@ -135,6 +136,13 @@ export default function HomePage() {
   const handleSelectEncounter = (encounter: Encounter) => {
     if (view.type === "recording") return
     setView({ type: "viewing", encounterId: encounter.id })
+  }
+
+  const handleDeleteEncounter = async (id: string) => {
+    await deleteEncounter(id)
+    if (view.type === "viewing" && view.encounterId === id) {
+      setView({ type: "idle" })
+    }
   }
 
   const handleSaveNote = async (noteText: string) => {
@@ -206,6 +214,7 @@ export default function HomePage() {
           encounters={encounters}
           selectedId={view.type === "viewing" ? view.encounterId : null}
           onSelect={handleSelectEncounter}
+          onDelete={handleDeleteEncounter}
           onNewEncounter={handleStartNew}
           disabled={view.type === "recording"}
         />

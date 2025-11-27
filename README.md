@@ -151,6 +151,39 @@ OpenScribe is built as a Next.js application with the following components:
    - Enter your OpenAI API key
    - The key is stored locally in browser localStorage
 
+### Docker Installation (Recommended)
+
+1. **Prerequisites**
+   - Docker and Docker Compose installed
+
+2. **Start all services**
+   ```bash
+   docker-compose up -d
+   ```
+   This will automatically:
+   - Start PostgreSQL database
+   - Run Prisma migrations
+   - Start Whisper transcription service
+   - Start Next.js frontend
+
+3. **Access the application**
+   - Frontend: http://localhost:3000
+   - Whisper API: http://localhost:9000
+   - PostgreSQL: localhost:5432
+
+4. **View logs**
+   ```bash
+   docker-compose logs -f migrate  # See migration status
+   docker-compose logs -f frontend  # See frontend logs
+   ```
+
+5. **Stop services**
+   ```bash
+   docker-compose down
+   ```
+
+**Note**: Database migrations run automatically on startup. The Whisper service uses CPU by default. For GPU support, change the image to `latest-gpu` in `docker-compose.yaml`.
+
 ## Configuration
 
 ### LLM Endpoint and API Key
