@@ -147,18 +147,18 @@ OpenScribe is built as a Next.js application with the following components:
    Navigate to `http://localhost:3000`
 
 5. **Configure API key** (optional for development)
-   - Click the settings icon in the UI
-   - Enter your OpenAI API key
-   - The key is stored locally in browser localStorage
+   - Create a `.env.local` file
+   - Add `OPENAI_API_KEY=your-key` (or set the variable in your deployment environment)
+   - Keys remain on the server and are never persisted in the browser
 
 ## Configuration
 
 ### LLM Endpoint and API Key
 
 - **Provider**: OpenAI (GPT-4o)
-- **Configuration**: Set via UI dialog (stored in `localStorage` as `openai_api_key`)
+- **Configuration**: Provide `OPENAI_API_KEY` via environment variables (e.g., `.env.local` or host-level secrets)
 - **Fallback**: If no API key is provided, the app attempts to use AI Gateway (may not work in all environments)
-- **Location**: Stored client-side only, never transmitted except to OpenAI API
+- **Location**: Stored server-side only; never written to client storage
 
 ### Whisper Mode
 
