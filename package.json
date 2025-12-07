@@ -4,17 +4,18 @@
   "private": true,
   "description": "OpenScribe – privacy-conscious clinical documentation assistant",
   "author": "Sam Margolis",
-  "main": "electron/main.js",
+  "main": "packages/shell/main.js",
   "scripts": {
-    "build": "next build --webpack",
-    "dev": "next dev",
+    "build": "next build apps/web --webpack",
+    "dev": "next dev apps/web",
     "dev:desktop": "concurrently -k \"pnpm dev\" \"pnpm electron:dev\"",
-    "electron:dev": "wait-on tcp:3000 && cross-env NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron electron/main.js",
-    "lint": "eslint .",
-    "start": "next start",
-    "build:test": "tsc --project tsconfig.test.json",
-    "test:audio": "pnpm build:test && node --test .tests-dist/tests/audio-validation.test.js",
-    "build:desktop": "pnpm build && node electron/scripts/prepare-next.js && electron-builder --mac"
+    "electron:dev": "wait-on tcp:3000 && cross-env NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron packages/shell/main.js",
+    "lint": "pnpm lint:structure && eslint --config config/eslint.config.mjs .",
+    "lint:structure": "node config/scripts/check-structure.mjs",
+    "start": "next start apps/web",
+    "build:test": "tsc --project config/tsconfig.test.json",
+    "test:audio": "pnpm build:test && node --test build/tests-dist/eval/src/tests/audio-validation.test.js",
+    "build:desktop": "pnpm build && node packages/shell/scripts/prepare-next.js && electron-builder --mac"
   },
   "dependencies": {
     "@ai-sdk/openai": "latest",
@@ -72,6 +73,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@eslint/js": "^9.13.0",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
     "@types/react": "^19",
@@ -80,18 +82,23 @@
     "cross-env": "^10.1.0",
     "electron": "^39.2.5",
     "electron-builder": "^26.0.12",
+    "eslint": "^9.13.0",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-unicorn": "^54.0.0",
     "fs-extra": "^11.3.2",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
     "typescript": "^5.7.2",
+    "typescript-eslint": "^8.10.0",
     "wait-on": "^9.0.3"
   },
   "build": {
     "appId": "com.openscribe.desktop",
     "productName": "OpenScribe",
     "asarUnpack": [
-      "next/**"
+      "build/web/**"
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -104,13 +111,13 @@
       }
     },
     "files": [
-      "electron/**/*",
+      "packages/shell/**/*",
       "package.json",
       "node_modules/**/*"
     ],
     "extraResources": [
       {
-        "from": ".next/standalone",
+        "from": "build/web/standalone",
         "to": "next"
       }
     ]

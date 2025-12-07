@@ -1,6 +1,7 @@
 node_modules
 .next
-dist
+apps/web/.next
+build/
 release
 .DS_Store
 *.dmg
@@ -10,8 +11,8 @@ release
 .env.development.local
 .env.test.local
 .env.production.local
+apps/web/.env.local
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.tests-dist

@@ -117,6 +117,20 @@ OpenScribe is built as a Next.js application with the following components:
 - **LLM Module**: OpenAI GPT-4o generates structured clinical notes from transcripts
 - **Storage Model**: Browser localStorage stores encounter metadata; audio blobs are kept in-memory during processing
 
+### Monorepo Layout
+
+The project now uses a clear apps/packages split so every responsibility has a single home:
+
+- `apps/web/` – Next.js front-end (app router) plus Electron renderer assets. All `src/` code lives inside this app.
+- `packages/pipeline/audio-ingest` … `packages/pipeline/eval` – ordered processing stages (audio ingest through evaluation).
+- `packages/ui/` – shared React components/hooks consumed by the web app.
+- `packages/storage/` – persistence helpers (secure storage + encounter repositories).
+- `packages/llm/` – provider-agnostic LLM client abstraction.
+- `packages/shell/` – Electron main process, preload script, and packaging helpers.
+- `packages/tests/` – standalone harnesses outside the pipeline when needed.
+- `config/` – central location for Next, PostCSS, shadcn, and TypeScript test config files (apps reference them via local stubs).
+- `build/` – all generated artifacts (`build/web` for Next output, `build/tests-dist` for compiled tests, `build/dist` for packaged binaries).
+
 ## Installation
 
 ### Prerequisites
@@ -146,10 +160,11 @@ OpenScribe is built as a Next.js application with the following components:
 4. **Open your browser**
    Navigate to `http://localhost:3000`
 
-5. **Configure API key** (optional for development)
-   - Create a `.env.local` file
-   - Add `OPENAI_API_KEY=your-key` (or set the variable in your deployment environment)
-   - Keys remain on the server and are never persisted in the browser
+5. **Configure environment variables**
+   - Copy `apps/web/.env.local.example` to `apps/web/.env.local` (or create it)
+   - Add `OPENAI_API_KEY=your-openai-key`
+   - Generate a 32-byte base64 secret and set `NEXT_PUBLIC_SECURE_STORAGE_KEY=...`
+   - These values live alongside the web app so Next.js can load them automatically
 
 ## Configuration
 
