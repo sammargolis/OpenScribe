@@ -1,4 +1,5 @@
 import type { Encounter } from "../core/types"
+import { loadSecureItem, saveSecureItem } from "@/lib/secure-storage"
 
 const STORAGE_KEY = "openscribe_encounters"
 
@@ -6,22 +7,18 @@ export function generateId(): string {
   return crypto.randomUUID()
 }
 
-export function getEncounters(): Encounter[] {
+export async function getEncounters(): Promise<Encounter[]> {
   if (typeof window === "undefined") return []
-  const data = localStorage.getItem(STORAGE_KEY)
-  if (!data) return []
-  try {
-    return JSON.parse(data) as Encounter[]
-  } catch {
-    return []
-  }
+  const encounters = await loadSecureItem<Encounter[]>(STORAGE_KEY)
+  if (!encounters) return []
+  return encounters
 }
 
-export function saveEncounters(encounters: Encounter[]): void {
+export async function saveEncounters(encounters: Encounter[]): Promise<void> {
   if (typeof window === "undefined") return
   // Remove audio blobs before saving (can't serialize Blob to JSON)
   const sanitized = encounters.map((e) => ({ ...e, audio_blob: undefined }))
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized))
+  await saveSecureItem(STORAGE_KEY, sanitized)
 }
 
 export function createEncounter(data: Partial<Encounter>): Encounter {

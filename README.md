@@ -24,7 +24,7 @@ The following features are implemented in v0:
 - ✅ **Transcription**: Audio-to-text transcription (currently simulated, designed for Whisper API integration)
 - ✅ **Note Generation**: Automatic generation of structured clinical notes from transcripts using GPT-4o
 - ✅ **Editable Draft Notes**: Structured note editor with sections (Chief Complaint, HPI, ROS, Physical Exam, Assessment, Plan)
-- ✅ **Local Storage**: All encounters stored in browser localStorage (no server required)
+- ✅ **Encrypted Local Storage**: All encounters stay on-device and are AES-GCM encrypted before being written to browser storage
 - ✅ **Simple UI**: Left-hand sidebar with encounter history, right-hand side for workflow
 - ✅ **Export/Copy**: Copy notes to clipboard or export as text files
 
@@ -158,7 +158,15 @@ OpenScribe is built as a Next.js application with the following components:
 - **Provider**: OpenAI (GPT-4o)
 - **Configuration**: Provide `OPENAI_API_KEY` via environment variables (e.g., `.env.local` or host-level secrets)
 - **Fallback**: If no API key is provided, the app attempts to use AI Gateway (may not work in all environments)
-- **Location**: Stored server-side only; never written to client storage
+
+### Secure Storage Key
+
+- **Variable**: `NEXT_PUBLIC_SECURE_STORAGE_KEY`
+- **Format**: Base64-encoded 32-byte secret (example: output of `openssl rand -base64 32`)
+- **Usage**: Used by the Web Crypto API to encrypt/decrypt encounter payloads before writing to `localStorage`
+- **Scope**: Bundled into both the browser build and Electron renderer to keep behavior identical
+- **Rotation**: Generate a new value for production builds and keep the secret outside of version control
+- **Location**: Loaded from `.env.local`/host environment at build time (do not commit it to the repo)
 
 ### Whisper Mode
 
@@ -218,6 +226,7 @@ To notarize or sign with different certificates, update the `build` block inside
 - **Location**: Browser `localStorage` (client-side only)
 - **Key**: `openscribe_encounters`
 - **Format**: JSON array of encounter objects
+- **Encryption**: AES-GCM using `NEXT_PUBLIC_SECURE_STORAGE_KEY` (32-byte base64 secret)
 - **Limitations**: 
   - Browser storage limits (typically 5-10MB)
   - Audio blobs are not persisted (in-memory only during processing)
@@ -275,10 +284,10 @@ To notarize or sign with different certificates, update the `build` block inside
 
 ### Data Storage
 
-- **Default**: All data stored locally in browser `localStorage`
+- **Default**: All encounter data stored locally in browser `localStorage`, encrypted with AES-GCM using `NEXT_PUBLIC_SECURE_STORAGE_KEY`
 - **Audio**: Processed in-memory, not persisted to disk
-- **Transcripts**: Stored as plain text in `localStorage`
-- **Notes**: Stored as plain text in `localStorage`
+- **Transcripts**: Stored inside the encrypted encounter payload
+- **Notes**: Stored inside the encrypted encounter payload
 
 ### Data Transmission
 

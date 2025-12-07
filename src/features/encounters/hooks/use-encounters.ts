@@ -13,20 +13,20 @@ export function useEncounters() {
   const addEncounter = async (data: Partial<Encounter>) => {
     const newEncounter = createEncounter(data)
     const updated = [newEncounter, ...encounters]
-    saveEncounters(updated)
+    await saveEncounters(updated)
     await mutate(updated, false)
     return newEncounter
   }
 
   const update = async (id: string, updates: Partial<Encounter>) => {
     const updated = updateEncounter(encounters, id, updates)
-    saveEncounters(updated)
+    await saveEncounters(updated)
     await mutate(updated, false)
   }
 
   const remove = async (id: string) => {
     const updated = deleteEncounter(encounters, id)
-    saveEncounters(updated)
+    await saveEncounters(updated)
     await mutate(updated, false)
   }
 
