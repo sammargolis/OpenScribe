@@ -49,6 +49,12 @@ const securityHeaders = [
   },
 ]
 
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -66,6 +72,24 @@ const nextConfig = {
         headers: securityHeaders,
       },
     ]
+  },
+  webpack: (config, { isServer }) => {
+    // Add aliases for monorepo packages to match tsconfig.json paths
+    // Note: Webpack aliases are simple prefix replacements, not glob patterns
+    // Don't use wildcards (*) - point to directories and webpack appends the rest
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@audio': path.resolve(__dirname, '../packages/pipeline/audio-ingest/src'),
+      '@transcription': path.resolve(__dirname, '../packages/pipeline/transcribe/src'),
+      '@transcript-assembly': path.resolve(__dirname, '../packages/pipeline/assemble/src'),
+      '@note-core': path.resolve(__dirname, '../packages/pipeline/note-core/src'),
+      '@note-rendering': path.resolve(__dirname, '../packages/pipeline/render/src'),
+      '@llm': path.resolve(__dirname, '../packages/llm/src'),
+      '@storage': path.resolve(__dirname, '../packages/storage/src'),
+      '@ui': path.resolve(__dirname, '../packages/ui/src'),
+      '@ui/lib': path.resolve(__dirname, '../packages/ui/src/lib'),
+    }
+    return config
   },
 }
 

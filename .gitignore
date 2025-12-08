@@ -2,6 +2,7 @@ node_modules
 .next
 apps/web/.next
 build/
+dist/
 release
 .DS_Store
 *.dmg
