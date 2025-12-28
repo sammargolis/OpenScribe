@@ -5,8 +5,8 @@ export interface LLMRequest {
   prompt: string
   model?: string
   /**
-   * JSON schema for structured output
-   * Set to enable JSON mode with schema validation
+   * @deprecated JSON schema tool calling is no longer used.
+   * The system now generates markdown directly.
    */
   jsonSchema?: {
     name: string
@@ -35,6 +35,7 @@ export async function runLLMRequest({ system, prompt, model, jsonSchema }: LLMRe
   const requestParams: Anthropic.MessageCreateParams = {
     model: resolvedModel,
     max_tokens: 4096,
+    system: system,
     messages: [
       {
         role: "user",
@@ -43,43 +44,14 @@ export async function runLLMRequest({ system, prompt, model, jsonSchema }: LLMRe
     ],
   }
 
-  // Add system message - can be string or array
+  // JSON schema is deprecated - we now generate markdown directly
   if (jsonSchema) {
-    // For structured output, we add tool use that enforces the schema
-    requestParams.system = [
-      {
-        type: "text",
-        text: system,
-      },
-    ]
-    requestParams.tools = [
-      {
-        name: jsonSchema.name,
-        description: `Generate a clinical note following this exact structure`,
-        input_schema: jsonSchema.schema as Anthropic.Tool.InputSchema,
-      },
-    ]
-    requestParams.tool_choice = {
-      type: "tool",
-      name: jsonSchema.name,
-    }
-  } else {
-    requestParams.system = system
+    console.warn("⚠️  jsonSchema parameter is deprecated and will be ignored. The system now generates markdown directly.")
   }
 
   const message = await client.messages.create(requestParams)
 
-  // Extract text from response
-  // If we used tool calling for structured output, extract from tool use
-  if (jsonSchema) {
-    const toolUseBlock = message.content.find((block) => block.type === "tool_use")
-    if (toolUseBlock && toolUseBlock.type === "tool_use") {
-      // Return the tool input as JSON string
-      return JSON.stringify(toolUseBlock.input, null, 2)
-    }
-  }
-
-  // Otherwise, extract regular text content
+  // Extract text content from response
   const textContent = message.content.find((block) => block.type === "text")
   if (!textContent || textContent.type !== "text") {
     throw new Error("No text content in Anthropic response")

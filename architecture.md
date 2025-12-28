@@ -76,8 +76,9 @@ packages/pipeline/
 * **transcribe** – Whisper adapters, segment uploader hook, WAV parsing.
 * **assemble** – streaming session store, SSE helpers, overlap
   trimming, diarization scaffolding.
-* **note-core** – clinical note domain models, parsing/formatting logic,
-  LLM orchestration (calls into `@llm`).
+* **note-core** – markdown-based clinical note generation using templates,
+  parsing/formatting logic, LLM orchestration (calls into `@llm`).
+  Uses `.md` templates for easy customization.
 * **render** – React components for presenting structured notes and
   exporters (SOAP renderer, specialty variants).
 * **eval** – regression/evaluation harness plus anonymized fixtures and
@@ -85,7 +86,29 @@ packages/pipeline/
 
 When expanding the pipeline (e.g., add “07_quality_control” or “08_storage”),
 create another subdirectory and add a new path alias if needed.
+#### Customizing Clinical Note Templates
 
+Contributors can customize note formats by editing markdown templates in
+`packages/llm/src/prompts/clinical-note/templates/`:
+
+* `default.md` – Standard clinical note (Chief Complaint, HPI, ROS, PE, Assessment, Plan)
+* `soap.md` – SOAP note format (Subjective/Objective/Assessment/Plan)
+
+To add a custom template:
+1. Create `packages/llm/src/prompts/clinical-note/templates/my-template.md`
+2. Add to `templates/index.ts`: `export function getMyTemplate(): string { return loadTemplate('my-template') }`
+3. Use in note generation:
+   ```typescript
+   await createClinicalNoteText({
+     transcript,
+     patient_name,
+     visit_reason,
+     template: 'my-template'
+   })
+   ```
+
+No JSON schemas or TypeScript interfaces required—just edit the markdown structure.
+See [MIGRATION_MARKDOWN.md](MIGRATION_MARKDOWN.md) for complete migration details.
 ### `packages/ui`
 
 Reusable React components, hooks, and UI utilities consumed by the apps.
@@ -106,11 +129,15 @@ the current browser implementation; apps keep importing `@storage/*`.
 
 ### `packages/llm`
 
-Provider-agnostic LLM abstraction. Today it exposes a thin wrapper around
-Anthropic Claude via `runLLMRequest`, but it is the home for:
+Provider-agnostic LLM abstraction plus versioned prompt templates.
+Today it exposes a thin wrapper around Anthropic Claude via `runLLMRequest`,
+and includes markdown-based clinical note templates in
+`src/prompts/clinical-note/templates/`. Contributors can customize note
+formats by editing `.md` template files without touching code.
 
+Future expansion:
 * Additional providers (OpenAI, Azure, local models).
-* Prompt templates shared across pipeline stages.
+* More template variants (SOAP, DAP, specialty-specific).
 * Retry/rate-limiting/shared logging for LLM calls.
 
 ### `packages/shell`

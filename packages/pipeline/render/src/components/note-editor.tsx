@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react"
 import type { Encounter } from "@storage/types"
-import { type ClinicalNote, parseNoteText, formatNoteText, serializeNote } from "@note-core"
 import { Button } from "@ui/lib/ui/button"
 import { Textarea } from "@ui/lib/ui/textarea"
 import { Badge } from "@ui/lib/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/lib/ui/tabs"
 import { ScrollArea } from "@ui/lib/ui/scroll-area"
 import { Save, Copy, Download, Check, AlertTriangle } from "lucide-react"
 import { format } from "date-fns"
@@ -17,54 +15,42 @@ interface NoteEditorProps {
   onSave: (noteText: string) => void
 }
 
-const SECTIONS = [
-  { key: "chief_complaint", label: "CC" },
-  { key: "hpi", label: "HPI" },
-  { key: "ros", label: "ROS" },
-  { key: "physical_exam", label: "PE" },
-  { key: "assessment", label: "Assessment" },
-  { key: "plan", label: "Plan" },
-] as const
-
 export function NoteEditor({ encounter, onSave }: NoteEditorProps) {
-  const [note, setNote] = useState<ClinicalNote>(() => parseNoteText(encounter.note_text))
+  const [noteMarkdown, setNoteMarkdown] = useState<string>(encounter.note_text || "")
   const [hasChanges, setHasChanges] = useState(false)
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    setNote(parseNoteText(encounter.note_text))
+    setNoteMarkdown(encounter.note_text || "")
     setHasChanges(false)
   }, [encounter.id, encounter.note_text])
 
-  const updateSection = (key: keyof ClinicalNote, value: string) => {
-    setNote((prev) => ({ ...prev, [key]: value }))
+  const handleNoteChange = (value: string) => {
+    setNoteMarkdown(value)
     setHasChanges(true)
     setSaved(false)
   }
 
   const handleSave = () => {
-    const serialized = serializeNote(note)
-    onSave(serialized)
+    onSave(noteMarkdown)
     setHasChanges(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
 
   const handleCopy = async () => {
-    const formatted = formatNoteText(note)
-    await navigator.clipboard.writeText(formatted)
+    await navigator.clipboard.writeText(noteMarkdown)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   const handleExport = () => {
-    const formatted = formatNoteText(note)
-    const blob = new Blob([formatted], { type: "text/plain" })
+    const blob = new Blob([noteMarkdown], { type: "text/markdown" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `${encounter.patient_name || "encounter"}_${format(new Date(encounter.created_at), "yyyy-MM-dd")}.txt`
+    a.download = `${encounter.patient_name || "encounter"}_${format(new Date(encounter.created_at), "yyyy-MM-dd")}.md`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -137,49 +123,16 @@ export function NoteEditor({ encounter, onSave }: NoteEditorProps) {
         </div>
       </div>
 
-      <Tabs defaultValue="complete" className="flex flex-1 flex-col overflow-hidden">
-        <div className="shrink-0 border-b border-border bg-background px-8">
-          <TabsList className="h-12 bg-transparent p-0 gap-1">
-            <TabsTrigger
-              value="complete"
-              className="rounded-none border-b-2 border-transparent px-4 text-sm text-muted-foreground data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground"
-            >
-              Complete Note
-            </TabsTrigger>
-            {SECTIONS.map(({ key, label }) => (
-              <TabsTrigger
-                key={key}
-                value={key}
-                className="rounded-none border-b-2 border-transparent px-4 text-sm text-muted-foreground data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground"
-              >
-                {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      <ScrollArea className="flex-1">
+        <div className="p-8">
+          <Textarea
+            value={noteMarkdown}
+            onChange={(e) => handleNoteChange(e.target.value)}
+            placeholder="Clinical note markdown..."
+            className="min-h-[600px] resize-none rounded-xl border-border bg-secondary font-mono text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-ring"
+          />
         </div>
-
-        <ScrollArea className="flex-1">
-          <div className="p-8">
-            <TabsContent value="complete" className="m-0">
-              <Textarea
-                value={formatNoteText(note)}
-                readOnly
-                className="min-h-[300px] resize-none rounded-xl border-border bg-secondary font-mono text-sm leading-relaxed"
-              />
-            </TabsContent>
-            {SECTIONS.map(({ key, label }) => (
-              <TabsContent key={key} value={key} className="m-0">
-                <Textarea
-                  value={note[key]}
-                  onChange={(e) => updateSection(key, e.target.value)}
-                  placeholder={`Enter ${label.toLowerCase()}...`}
-                  className="min-h-[300px] resize-none rounded-xl border-border bg-secondary font-mono text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-ring"
-                />
-              </TabsContent>
-            ))}
-          </div>
-        </ScrollArea>
-      </Tabs>
+      </ScrollArea>
     </div>
   )
 }

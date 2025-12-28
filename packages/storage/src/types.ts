@@ -16,6 +16,10 @@ export interface Encounter {
   updated_at: string
   audio_blob?: Blob
   transcript_text: string
+  /**
+   * Clinical note in markdown format
+   * This is the primary storage format for notes
+   */
   note_text: string
   status: EncounterStatus
   language: string
