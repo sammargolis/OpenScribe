@@ -1,15 +1,10 @@
 const WHISPER_URL = "https://api.openai.com/v1/audio/transcriptions"
 
-function getApiKey(): string {
-  const key = process.env.OPENAI_API_KEY
+export async function transcribeWavBuffer(buffer: Buffer, filename: string, apiKey?: string): Promise<string> {
+  const key = apiKey || process.env.OPENAI_API_KEY
   if (!key) {
-    throw new Error("Missing OPENAI_API_KEY")
+    throw new Error("Missing OPENAI_API_KEY. Please configure your API key in Settings.")
   }
-  return key
-}
-
-export async function transcribeWavBuffer(buffer: Buffer, filename: string): Promise<string> {
-  const apiKey = getApiKey()
   const formData = new FormData()
   const blob = new Blob([new Uint8Array(buffer)], { type: "audio/wav" })
   formData.append("file", blob, filename)
@@ -18,7 +13,7 @@ export async function transcribeWavBuffer(buffer: Buffer, filename: string): Pro
   const response = await fetch(WHISPER_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${key}`,
     },
     body: formData,
   })

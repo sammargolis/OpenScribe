@@ -119,7 +119,8 @@
       ],
       "icon": "build/icon.icns",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "OpenScribe captures clinician and patient speech to document visits accurately."
+        "NSMicrophoneUsageDescription": "OpenScribe captures clinician and patient speech to document visits accurately.",
+        "NSScreenCaptureDescription": "OpenScribe captures system audio to transcribe all voices in the clinical encounter."
       }
     },
     "files": [

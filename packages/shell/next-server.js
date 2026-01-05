@@ -8,9 +8,29 @@ let nextServerProcess;
 let readyPromise;
 
 const resolveNodePath = () => {
-  // Use Node.js from system PATH
-  // Modern Electron embeds Node.js in the main executable, not as a separate binary
-  // So we use the system's Node.js installation instead
+  // When app is launched from Dock/Finder, PATH is minimal and doesn't include Homebrew
+  // Try common Node.js installation paths in order
+  const fs = require('fs');
+  const possiblePaths = [
+    '/opt/homebrew/bin/node',     // Homebrew on Apple Silicon
+    '/usr/local/bin/node',         // Homebrew on Intel Mac
+    '/usr/bin/node',               // System Node
+    process.execPath,              // Electron's Node (fallback)
+  ];
+
+  for (const nodePath of possiblePaths) {
+    try {
+      if (fs.existsSync(nodePath)) {
+        console.log(`Using Node.js at: ${nodePath}`);
+        return nodePath;
+      }
+    } catch (error) {
+      // Continue to next path
+    }
+  }
+
+  // Last resort: try 'node' from PATH
+  console.warn('Could not find Node.js at common paths, falling back to PATH');
   return 'node';
 };
 

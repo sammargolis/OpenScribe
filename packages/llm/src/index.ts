@@ -4,6 +4,7 @@ export interface LLMRequest {
   system: string
   prompt: string
   model?: string
+  apiKey?: string
   /**
    * @deprecated JSON schema tool calling is no longer used.
    * The system now generates markdown directly.
@@ -14,13 +15,13 @@ export interface LLMRequest {
   }
 }
 
-export async function runLLMRequest({ system, prompt, model, jsonSchema }: LLMRequest): Promise<string> {
-  const anthropicApiKey = process.env.ANTHROPIC_API_KEY
-  
+export async function runLLMRequest({ system, prompt, model, apiKey, jsonSchema }: LLMRequest): Promise<string> {
+  const anthropicApiKey = apiKey || process.env.ANTHROPIC_API_KEY
+
   if (!anthropicApiKey) {
     throw new Error(
-      "ANTHROPIC_API_KEY environment variable is required. " +
-      "Please set it in your .env.local file or environment."
+      "ANTHROPIC_API_KEY is required. " +
+      "Please configure it in Settings."
     )
   }
 

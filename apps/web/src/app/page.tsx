@@ -110,10 +110,12 @@ function HomePageContent() {
     setPreferences({ noteLength: length })
   }
 
+  const handleUploadError = useCallback((error: any) => {
+    console.error("Segment upload failed:", error?.code, "-", error?.message)
+  }, [])
+
   const { enqueueSegment, resetQueue } = useSegmentUpload(sessionId, {
-    onError: (error) => {
-      console.error("Segment upload failed:", error)
-    },
+    onError: handleUploadError,
   })
 
   const cleanupSession = useCallback(() => {

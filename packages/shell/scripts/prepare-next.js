@@ -32,6 +32,17 @@ const run = async () => {
   await ensureExists(staticSource, staticDestination);
   await ensureExists(publicSource, publicDestination);
 
+  // Copy .env.local to standalone directory for packaged app
+  const envLocalSource = path.join(appDir, '.env.local');
+  const envLocalDestination = path.join(standaloneDir, '.env.local');
+
+  if (await fs.pathExists(envLocalSource)) {
+    await fs.copy(envLocalSource, envLocalDestination);
+    console.log('✅ Copied .env.local to standalone directory');
+  } else {
+    console.warn('⚠️  Warning: .env.local not found. API keys will not be available in packaged app.');
+  }
+
   // Workaround for electron-builder issue #3104:
   // electron-builder ignores directories named "node_modules" in extraResources
   // Rename node_modules to _node_modules for packaging

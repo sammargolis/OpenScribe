@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server"
 import { parseWavHeader, transcribeWavBuffer } from "@transcription"
 import { transcriptionSessionStore } from "@transcript-assembly"
+import { getOpenAIApiKey } from "@storage/server-api-keys"
 
 function jsonError(status: number, code: string, message: string) {
   return new Response(JSON.stringify({ error: { code, message } }), {
@@ -49,7 +50,8 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const transcript = await transcribeWavBuffer(Buffer.from(arrayBuffer), `segment-${seqNo}.wav`)
+      const apiKey = getOpenAIApiKey()
+      const transcript = await transcribeWavBuffer(Buffer.from(arrayBuffer), `segment-${seqNo}.wav`, apiKey)
       transcriptionSessionStore.addSegment(sessionId, {
         seqNo,
         startMs,

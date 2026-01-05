@@ -61,8 +61,39 @@ const createMainWindow = async () => {
   return window;
 };
 
+const checkIfRunningFromDMG = () => {
+  // Only check on macOS and when app is packaged
+  if (!isMac || !app.isPackaged) {
+    return false;
+  }
+
+  const exePath = app.getPath('exe');
+  return exePath.startsWith('/Volumes/');
+};
+
 const boot = async () => {
   await app.whenReady();
+
+  // Check if running from DMG and warn user
+  if (checkIfRunningFromDMG()) {
+    const response = dialog.showMessageBoxSync({
+      type: 'warning',
+      title: 'Installation Required',
+      message: 'Please install OpenScribe to your Applications folder',
+      detail: 'Running directly from the disk image may cause startup issues. Please drag OpenScribe to your Applications folder and run it from there.\n\nWould you like to continue anyway?',
+      buttons: ['Quit and Install', 'Continue Anyway'],
+      defaultId: 0,
+      cancelId: 0,
+    });
+
+    if (response === 0) {
+      // User chose to quit and install properly
+      app.quit();
+      return;
+    }
+    // Otherwise continue with warning acknowledged
+  }
+
   registerPermissionHandlers();
   mainWindow = await createMainWindow();
 

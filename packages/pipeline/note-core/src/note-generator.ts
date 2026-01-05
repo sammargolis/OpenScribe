@@ -13,10 +13,11 @@ export interface ClinicalNoteRequest {
   visit_reason: string
   noteLength?: NoteLength
   template?: string
+  apiKey?: string
 }
 
 export async function createClinicalNoteText(params: ClinicalNoteRequest): Promise<string> {
-  const { transcript, patient_name, visit_reason, noteLength = "long", template } = params
+  const { transcript, patient_name, visit_reason, noteLength = "long", template, apiKey } = params
 
   console.log("=".repeat(80))
   console.log("GENERATING CLINICAL NOTE (MARKDOWN)")
@@ -63,6 +64,7 @@ export async function createClinicalNoteText(params: ClinicalNoteRequest): Promi
       system: systemPrompt,
       prompt: userPrompt,
       model: prompts.clinicalNote.currentVersion.MODEL_OPTIMIZED_FOR,
+      apiKey,
       // No JSON schema - direct text generation
     })
 

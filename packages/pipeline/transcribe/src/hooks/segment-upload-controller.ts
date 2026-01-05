@@ -54,7 +54,7 @@ export class SegmentUploadController {
   ) {
     this.sessionId = sessionId
     this.options = options
-    this.fetchFn = deps?.fetchFn ?? globalThis.fetch
+    this.fetchFn = deps?.fetchFn ?? globalThis.fetch.bind(globalThis)
     if (!this.fetchFn) {
       throw new Error("fetch API is required for SegmentUploadController")
     }
@@ -68,6 +68,7 @@ export class SegmentUploadController {
 
   enqueueSegment(segment: PendingSegment) {
     if (!this.sessionId) {
+      console.warn('[SegmentUpload] Segment', segment.seqNo, 'dropped - session not initialized yet')
       this.notifyError({ code: "capture_error", message: "Session not initialized" })
       return
     }
@@ -107,11 +108,18 @@ export class SegmentUploadController {
     try {
       await this.uploadSegment(sessionId, segment)
     } catch (error) {
-      const uploadError: UploadError =
-        error instanceof UploadException
-          ? { code: error.code, message: error.message }
-          : { code: "network_error", message: error instanceof Error ? error.message : "Upload failed" }
-      this.notifyError(uploadError)
+      // Only report actual failures, not internal retry logic
+      if (error) {
+        const uploadError: UploadError =
+          error instanceof UploadException
+            ? { code: error.code, message: error.message }
+            : { 
+                code: "network_error", 
+                message: error instanceof Error ? error.message : String(error) || "Upload failed" 
+              }
+        console.error('[SegmentUpload] Final upload failure for segment', segment.seqNo, ':', uploadError.code, uploadError.message)
+        this.notifyError(uploadError)
+      }
     } finally {
       this.inFlight = Math.max(0, this.inFlight - 1)
       if (!this.aborted) {

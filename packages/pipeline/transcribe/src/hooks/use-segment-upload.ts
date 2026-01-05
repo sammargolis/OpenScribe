@@ -21,11 +21,10 @@ export function useSegmentUpload(sessionId: string | null, options?: UseSegmentU
     controllerRef.current = new SegmentUploadController(sessionId, {
       onError: (error) => onErrorRef.current?.(error),
     })
+  } else {
+    // Update sessionId synchronously to avoid race condition with first segment
+    controllerRef.current.setSessionId(sessionId)
   }
-
-  useEffect(() => {
-    controllerRef.current?.setSessionId(sessionId)
-  }, [sessionId])
 
   useEffect(() => {
     return () => {
