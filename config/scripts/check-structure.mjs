@@ -19,8 +19,6 @@ const allowedRootFiles = new Set([
   "QUICK_START.md",
   "STABILITY_FIXES.md",
   "TEST_SESSION.md",
-  "rebuild-and-test.sh",
-  "test-electron-fixes.sh",
 ])
 const buildArtifacts = new Set([".next", ".tests-dist", "dist"])
 const configPattern = /\.config\.(?:js|cjs|mjs|ts)$/

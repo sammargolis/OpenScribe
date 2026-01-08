@@ -204,7 +204,7 @@ function HomePageContent() {
 
   const processEncounterForNoteGeneration = useCallback(
     async (encounterId: string, transcript: string) => {
-      const enc = encountersRef.current.find((e) => e.id === encounterId)
+      const enc = encountersRef.current.find((e: Encounter) => e.id === encounterId)
       const patientName = enc?.patient_name || ""
       const visitReason = enc?.visit_reason || ""
 
@@ -463,8 +463,8 @@ function HomePageContent() {
     await processEncounterForNoteGeneration(encounterId, transcript)
   }
 
-  const currentEncounter = encounters.find((e) => "encounterId" in view && e.id === view.encounterId)
-  const selectedEncounter = view.type === "viewing" ? encounters.find((e) => e.id === view.encounterId) : null
+  const currentEncounter = encounters.find((e: Encounter) => "encounterId" in view && e.id === view.encounterId)
+  const selectedEncounter = view.type === "viewing" ? encounters.find((e: Encounter) => e.id === view.encounterId) : null
 
   const handleSelectEncounter = (encounter: Encounter) => {
     if (view.type === "recording") return

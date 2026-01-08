@@ -310,3 +310,201 @@ Breaking these rules causes CI/local `pnpm lint` to fail, so prefer renaming/mov
 
 By following this structure, the project stays modular: each domain evolves in
 its own package, apps consume those packages, and tooling sits in `config/`.
+
+---
+
+## Quick Reference: Where to Edit
+
+This section provides a practical guide for day-to-day development work.
+
+### 🎯 Daily Development (90% of work)
+
+**`apps/web/src/app/page.tsx`** ⭐⭐⭐  
+Main application orchestrator (~570 lines)
+- State management and workflow logic
+- View transitions (idle → recording → processing → viewing)
+- Integration point for all UI components
+- Edit when: changing app behavior, adding features, fixing workflow bugs
+
+**`apps/web/src/app/actions.ts`**  
+Server-side functions
+- Clinical note generation endpoint
+- Edit when: changing server-side logic, note generation flow
+
+**`apps/web/src/app/api/`**  
+Next.js API routes
+- `settings/api-keys/` - API key management
+- `transcription/segment/` - Segment uploads
+- `transcription/final/` - Final transcription
+- `transcription/stream/[sessionId]/` - SSE streaming
+- Edit when: changing API endpoints, adding new routes
+
+**`packages/ui/src/components/`** ⭐⭐⭐  
+Reusable React components (edit frequently)
+- `encounter-list.tsx` - Encounter history list
+- `recording-view.tsx` - Recording interface
+- `processing-view.tsx` - Processing status display
+- `settings-dialog.tsx` - Settings modal
+- `new-encounter-form.tsx` - New encounter form
+- `permissions-dialog.tsx` - Permission requests
+- `error-boundary.tsx` - Error handling
+- `idle-view.tsx` - Initial/idle state
+- `settings-bar.tsx` - Settings toolbar
+- Edit when: UI changes, new components, component behavior changes
+
+**`packages/llm/src/prompts/clinical-note/templates/`** ⭐⭐⭐  
+Clinical note formats (markdown files, no code required)
+- `default.md` - Standard clinical note format
+- `soap.md` - SOAP note format
+- `README.md` - Template documentation
+- `index.ts` - Template loader
+- Edit when: changing note structure, adding new note formats
+
+### 🔧 Weekly/Monthly Development
+
+**`packages/pipeline/audio-ingest/src/`**  
+Audio recording and capture
+- `capture/` - Recording implementation
+- `devices/` - Microphone/system audio device management
+- `__tests__/` - Audio capture tests
+- Edit when: recording bugs, new audio features, device support
+
+**`packages/pipeline/transcribe/src/`**  
+Whisper transcription integration
+- `core/` - Transcription engine
+- `hooks/` - React hooks (useSegmentUpload)
+- `providers/` - Whisper API adapters
+- `__tests__/` - Transcription tests
+- Edit when: transcription service changes, provider updates
+
+**`packages/pipeline/note-core/src/`**  
+Clinical note generation engine
+- `note-generator.ts` - Note generation logic
+- `clinical-models/` - Note structure definitions
+- `preprocessing/` - Input processing
+- `postprocessing/` - Output formatting
+- `__tests__/` - Note generation tests
+- Edit when: note generation logic, LLM orchestration
+
+**`packages/pipeline/assemble/src/`**  
+Transcript assembly and streaming
+- `session-store.ts` - SSE session management
+- `index.ts` - Assembly logic
+- Edit when: streaming logic, transcript assembly changes
+
+**`packages/storage/src/`**  
+Data persistence layer
+- `encounters.ts` - Encounter CRUD operations
+- `api-keys.ts` - API key storage
+- `preferences.ts` - User preferences
+- `secure-storage.ts` - AES-GCM encryption utilities
+- `server-api-keys.ts` - Server-side key management
+- `types.ts` - Shared TypeScript types
+- Edit when: data structure changes, storage logic updates
+
+**`packages/llm/src/`**  
+LLM abstraction layer
+- `index.ts` - Main LLM wrapper (Anthropic Claude)
+- `prompts/index.ts` - Prompt management
+- `providers/` - (Future) Additional providers
+- `__tests__/` - LLM integration tests
+- Edit when: LLM provider changes, adding new providers
+
+**`packages/ui/src/hooks/`**  
+Shared React hooks
+- `use-encounters.ts` - Encounter management hook
+- Edit when: shared state logic, new hooks
+
+**`packages/ui/src/lib/`**  
+UI utilities
+- `ui/` - shadcn/ui component wrappers
+- `utils/` - Helper functions (cn, etc.)
+- Edit when: new utilities, UI library updates
+
+### 🛠️ Rarely Edit
+
+**`packages/pipeline/render/src/`**  
+Note display components
+- `components/` - Note display components
+- `renderers/` - Format-specific renderers (SOAP variants)
+- Edit when: note display format changes
+
+**`packages/pipeline/eval/src/`**  
+Testing and evaluation framework
+- `cases/encounter/` - Encounter test data
+- `cases/testMP3/` - Audio test files
+- `runtime/` - Test execution
+- `tests/` - Test implementations
+- `types/` - Test type definitions
+- Edit when: adding tests, evaluation criteria
+
+**`packages/shell/`**  
+Electron desktop wrapper
+- `main.js` - Electron main process (window management, ~150 lines)
+- `next-server.js` - Next.js server startup (~150 lines)
+- `preload.js` - IPC bridge between renderer and main
+- `scripts/prepare-next.js` - Build prep (node_modules rename workaround)
+- `buildResources/` - App icons, installer assets
+- Edit when: desktop features, OS integrations, window behavior
+
+**`config/`**  
+Centralized tool configuration
+- `next.config.mjs` - Next.js config (CSP, headers, webpack aliases)
+- `eslint.config.mjs` - Linting rules
+- `postcss.config.mjs` - Tailwind setup
+- `tsconfig.test.json` - Test compilation config
+- `components.json` - shadcn UI settings
+- `scripts/check-structure.mjs` - Structure linting
+- Edit when: build configuration, webpack aliases, tool setup
+
+### 🚫 Never Edit (Generated/System)
+
+**Auto-generated folders** (safe to delete and rebuild)
+- `build/` - Compiled output (tests, binaries)
+- `apps/web/.next/` - Next.js build output
+- `node_modules/` - Installed dependencies
+- `.pnpm-store/` - pnpm package cache
+- `.git/` - Git data (DO NOT DELETE)
+
+### 📂 Empty/Placeholder Folders
+
+**Cleanup candidates** (currently unused)
+- `packages/tests/` - Empty, intended for shared test utilities
+- `packages/llm/src/providers/` - Empty, Anthropic in index.ts instead
+- `packages/ui/src/screens/` - Empty, purpose unclear
+- `.claude/` - Unknown purpose, investigate before removal
+
+### 🗺️ Navigation Quick Reference
+
+**"I want to change..."**
+| Goal | Location |
+|------|----------|
+| Main app behavior | `apps/web/src/app/page.tsx` |
+| UI component | `packages/ui/src/components/<component>.tsx` |
+| Note format/structure | `packages/llm/src/prompts/clinical-note/templates/<template>.md` |
+| Recording logic | `packages/pipeline/audio-ingest/src/` |
+| Transcription | `packages/pipeline/transcribe/src/` |
+| Data storage | `packages/storage/src/` |
+| API endpoint | `apps/web/src/app/api/` |
+| Desktop window | `packages/shell/main.js` |
+| Server action | `apps/web/src/app/actions.ts` |
+| Shared hook | `packages/ui/src/hooks/` |
+
+### 📊 Edit Frequency Summary
+
+- **Daily**: `page.tsx`, UI components, note templates
+- **Weekly**: API routes, storage logic
+- **Monthly**: Pipeline packages, LLM integration
+- **Rarely**: Config, shell, tests
+- **Never**: Generated folders
+
+### 🧹 Folder Cleanup Checklist
+
+Before removing any folder:
+1. Search entire codebase for imports from that folder
+2. Check if referenced in `tsconfig.json` paths
+3. Check if referenced in `package.json` scripts
+4. Check if referenced in webpack config (`config/next.config.mjs`)
+5. Run `pnpm build` to ensure no breaks
+6. Run `pnpm lint` to check structure rules
+7. Git commit before removal for easy rollback
