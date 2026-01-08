@@ -1,12 +1,11 @@
 # OpenScribe
 
-## Demo
-
-[![Watch Demo](.github/demo.png)]()
-
 ## Project Overview
 
 OpenScribe is a local first MIT license open source AI Medical Scribe that helps clinicians record patient encounters, transcribe audio, and generate structured draft clinical notes using LLMs. The tool stores all data locally by default.
+
+- [Architecture](./architecture.md)
+- [Contributing](./CONTRIBUTING.md)
 
 ## Quick Start (5 minutes)
 
@@ -14,6 +13,7 @@ OpenScribe is a local first MIT license open source AI Medical Scribe that helps
 
 ```bash
 node --version  # Check you have Node.js 18+
+# If not installed: brew install node if version < 18: brew upgrade node  (macOS) or download latest from nodejs.org
 npm install -g pnpm
 ```
 
@@ -54,16 +54,30 @@ pnpm dev:desktop  # OR desktop app (Electron)
 
 Both services offer $5 free credits for new accounts
 
+### Staying Updated
+
+```bash
+git pull origin main  # Pull latest changes
+pnpm install          # Update dependencies
+
+# If you encounter issues after updating:
+rm -rf node_modules pnpm-lock.yaml && pnpm install
+```
+
 ---
+
+## Demo
+
+[![Watch Demo](.github/demo.png)]()
+
 
 ## Purpose and Philosophy
 
-OpenScribe exists to provide a simple, modular, privacy-conscious alternative to cloud-dependent clinical documentation tools. The project is built on core principles:
+OpenScribe exists to provide a simple, open-source alternative to cloud dependent clinical documentation tools. The project is built on core principles:
 
 - **Local-first**: All data (audio recordings, transcripts, notes) is stored locally in the browser by default
 - **Privacy-conscious**: No data collection, no analytics, no cloud dependency unless explicitly configured by the user
 - **Modular**: Components can be swapped or extended (e.g., different LLM providers, transcription services)
-- **Transparent**: Clear boundaries between AI assistance and clinician responsibility
 
 ## Project Resources
 
@@ -72,14 +86,6 @@ OpenScribe exists to provide a simple, modular, privacy-conscious alternative to
 - **Maintainer**: [@sammargolis](https://github.com/sammargolis)
 - **Architecture**: [architecture.md](./architecture.md)
 - **Tests**: [packages/llm](./packages/llm/src/__tests__/), [packages/pipeline](./packages/pipeline/)
-
-## Features
-
-- ✅ Audio transcription
-- ✅ AI-generated structured notes (Currently support anthropic and OpenAI with plan for broader support)
-- ✅ Editable note sections (CC, HPI, ROS, PE, Assessment, Plan)
-- ✅ AES-GCM encrypted local storage
-- ✅ Export to clipboard or text files
 
 ## Quick Start
 
@@ -96,7 +102,7 @@ pnpm install
 pnpm dev
 ```
 
-Open `http://localhost:3000`
+Open `http://localhost:3001`
 
 ### Environment Variables
 
@@ -113,9 +119,9 @@ Generate the storage key: `openssl rand -base64 32`
 ## Roadmap
 
 ### Current Status (v0)
-- ✅ Core recording, transcription, and note generation
-- ✅ AES-GCM encrypted local storage
-- ✅ Browser-based audio capture
+- Core recording, transcription, and note generation
+- AES-GCM encrypted local storage
+- Browser-based audio capture
 
 ### Near-term (v0.1-0.5)
 - Error handling improvements
@@ -211,16 +217,15 @@ See [architecture.md](./architecture.md) for complete details.
 
 ## Contributing
 
-Contributions welcome! Check the [Trello board](https://trello.com/b/9ytGVZU4/openscribe) for current tasks.
+Contributions welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
-**How to Contribute:**
-1. Open a GitHub issue or discussion first
-2. Fork and create a descriptive branch (`feature/whisper-integration`)
-3. Use TypeScript with full type annotations
-4. Follow existing code style
-5. Submit a PR
+**Quick Start:**
+1. Fork the repository
+2. Create a feature branch
+3. Make changes with tests
+4. Submit a PR
 
-**Priority Areas**: Error handling, testing, accessibility, documentation
+Check the [Trello board](https://trello.com/b/9ytGVZU4/openscribe) for current priorities.
 
 ## License
 

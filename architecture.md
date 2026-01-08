@@ -317,7 +317,7 @@ its own package, apps consume those packages, and tooling sits in `config/`.
 
 This section provides a practical guide for day-to-day development work.
 
-### 🎯 Daily Development (90% of work)
+### Primary Development Locations
 
 **`apps/web/src/app/page.tsx`** ⭐⭐⭐  
 Main application orchestrator (~570 lines)
@@ -360,7 +360,7 @@ Clinical note formats (markdown files, no code required)
 - `index.ts` - Template loader
 - Edit when: changing note structure, adding new note formats
 
-### 🔧 Weekly/Monthly Development
+### Occational Development Locations
 
 **`packages/pipeline/audio-ingest/src/`**  
 Audio recording and capture
@@ -466,14 +466,6 @@ Centralized tool configuration
 - `.pnpm-store/` - pnpm package cache
 - `.git/` - Git data (DO NOT DELETE)
 
-### 📂 Empty/Placeholder Folders
-
-**Cleanup candidates** (currently unused)
-- `packages/tests/` - Empty, intended for shared test utilities
-- `packages/llm/src/providers/` - Empty, Anthropic in index.ts instead
-- `packages/ui/src/screens/` - Empty, purpose unclear
-- `.claude/` - Unknown purpose, investigate before removal
-
 ### 🗺️ Navigation Quick Reference
 
 **"I want to change..."**
@@ -490,21 +482,4 @@ Centralized tool configuration
 | Server action | `apps/web/src/app/actions.ts` |
 | Shared hook | `packages/ui/src/hooks/` |
 
-### 📊 Edit Frequency Summary
 
-- **Daily**: `page.tsx`, UI components, note templates
-- **Weekly**: API routes, storage logic
-- **Monthly**: Pipeline packages, LLM integration
-- **Rarely**: Config, shell, tests
-- **Never**: Generated folders
-
-### 🧹 Folder Cleanup Checklist
-
-Before removing any folder:
-1. Search entire codebase for imports from that folder
-2. Check if referenced in `tsconfig.json` paths
-3. Check if referenced in `package.json` scripts
-4. Check if referenced in webpack config (`config/next.config.mjs`)
-5. Run `pnpm build` to ensure no breaks
-6. Run `pnpm lint` to check structure rules
-7. Git commit before removal for easy rollback
