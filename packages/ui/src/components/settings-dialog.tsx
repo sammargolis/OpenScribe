@@ -1,12 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Eye, EyeOff } from "lucide-react"
+import { X } from "lucide-react"
 import { Button } from "@ui/lib/ui/button"
 import { Label } from "@ui/lib/ui/label"
-import { Input } from "@ui/lib/ui/input"
 import type { NoteLength } from "@storage/preferences"
-import { getApiKeys, setApiKeys, validateApiKey } from "@storage"
 import { getAuditRetentionDays, setAuditRetentionDays, purgeAllAuditLogs } from "@storage/audit-log"
 import { AuditLogViewer } from "./audit-log-viewer"
 
@@ -18,10 +16,6 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ isOpen, onClose, noteLength, onNoteLengthChange }: SettingsDialogProps) {
-  const [openaiKey, setOpenaiKey] = useState("")
-  const [anthropicKey, setAnthropicKey] = useState("")
-  const [showOpenaiKey, setShowOpenaiKey] = useState(false)
-  const [showAnthropicKey, setShowAnthropicKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
   const [retentionDays, setRetentionDays] = useState(90)
@@ -29,44 +23,15 @@ export function SettingsDialog({ isOpen, onClose, noteLength, onNoteLengthChange
 
   useEffect(() => {
     if (isOpen) {
-      void loadKeys()
       setRetentionDays(getAuditRetentionDays())
     }
   }, [isOpen])
-
-  const loadKeys = async () => {
-    try {
-      const keys = await getApiKeys()
-      setOpenaiKey(keys.openaiApiKey)
-      setAnthropicKey(keys.anthropicApiKey)
-    } catch (error) {
-      console.error("Failed to load API keys:", error)
-    }
-  }
 
   const handleSave = async () => {
     setIsSaving(true)
     setSaveMessage("")
 
     try {
-      // Validate keys if provided
-      if (openaiKey && !validateApiKey(openaiKey, "openai")) {
-        setSaveMessage("Invalid OpenAI API key format")
-        setIsSaving(false)
-        return
-      }
-
-      if (anthropicKey && !validateApiKey(anthropicKey, "anthropic")) {
-        setSaveMessage("Invalid Anthropic API key format")
-        setIsSaving(false)
-        return
-      }
-
-      await setApiKeys({
-        openaiApiKey: openaiKey,
-        anthropicApiKey: anthropicKey,
-      })
-
       // Save retention policy
       setAuditRetentionDays(retentionDays)
 
@@ -119,73 +84,6 @@ export function SettingsDialog({ isOpen, onClose, noteLength, onNoteLengthChange
 
         {/* Settings Content */}
         <div className="space-y-6">
-          {/* API Keys Section */}
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">API Keys</h3>
-              <p className="text-sm text-muted-foreground">
-                Configure your API keys for transcription and note generation
-              </p>
-            </div>
-
-            {/* OpenAI API Key */}
-            <div className="space-y-2">
-              <Label htmlFor="openai-key" className="text-sm font-medium text-foreground">
-                OpenAI API Key
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Required for audio transcription (Whisper)
-              </p>
-              <div className="relative">
-                <Input
-                  id="openai-key"
-                  type={showOpenaiKey ? "text" : "password"}
-                  value={openaiKey}
-                  onChange={(e) => setOpenaiKey(e.target.value)}
-                  placeholder="sk-..."
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowOpenaiKey(!showOpenaiKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showOpenaiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Anthropic API Key */}
-            <div className="space-y-2">
-              <Label htmlFor="anthropic-key" className="text-sm font-medium text-foreground">
-                Anthropic API Key
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Required for clinical note generation (Claude)
-              </p>
-              <div className="relative">
-                <Input
-                  id="anthropic-key"
-                  type={showAnthropicKey ? "text" : "password"}
-                  value={anthropicKey}
-                  onChange={(e) => setAnthropicKey(e.target.value)}
-                  placeholder="sk-ant-..."
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAnthropicKey(!showAnthropicKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showAnthropicKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-border" />
-
           {/* Note Length Setting */}
           <div className="space-y-3">
             <Label className="text-base font-medium text-foreground">Note Length</Label>

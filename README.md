@@ -8,6 +8,9 @@ OpenScribe is a MIT license open source AI Medical Scribe that helps clinicians 
 - [Architecture](./architecture.md)
 - [Contributing](./CONTRIBUTING.md)
 
+
+**⚠️ NOT READY FOR CLINICAL USE ⚠️**: This software is currently in early development (v0.x) and is NOT suitable for clinical practice yet. It is intended for evaluation, testing, and development purposes only. Do not use with real patient data or in clinical settings.
+
 ## Quick Start (5 minutes)
 
 ### 1. Install Prerequisites
@@ -186,7 +189,8 @@ See [architecture.md](./architecture.md) for complete details.
 
 ## Limitations & Disclaimers
  
-**HIPAA Compliance**: Self hosted users ensure their own compliance  
+**HIPAA Compliance**: OpenScribe includes features like encrypted local storage and audit logging that are foundational steps toward HIPAA compliance, but these alone do not make the application HIPAA-compliant. Healthcare providers using this software are responsible for ensuring full compliance with HIPAA regulations, including signing Business Associate Agreements (BAAs) with any third-party service providers (e.g., OpenAI, Anthropic), implementing appropriate access controls, conducting risk assessments, and maintaining all required safeguards and documentation.
+
 **No EHR Integration**: Standalone tool  
 **Browser Storage Limits**: ~5-10MB typical  
 **No Warranty**: Provided as-is under MIT License
