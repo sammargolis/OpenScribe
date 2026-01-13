@@ -2,14 +2,21 @@
 
 ## Project Overview
 
-OpenScribe is a MIT license open source AI Medical Scribe that helps clinicians record patient encounters, transcribe audio, and generate structured draft clinical notes using LLMs. The tool stores all data locally by default.
+OpenScribe is a free MIT license open source AI Medical Scribe that helps clinicians record patient encounters, transcribe audio, and generate structured draft clinical notes using LLMs. The tool uses Whisper for audio transcription, Claude models for note generation, and persists app data locally by default.
 
-- [Demo](https://www.loom.com/share/659d4f09fc814243addf8be64baf10aa)
+- [Demo](https://www.loom.com/share/1ccd4eec00eb4ddab700d32734f33c28)
 - [Architecture](./architecture.md)
 - [Contributing](./CONTRIBUTING.md)
 
 
 **⚠️ NOT READY FOR CLINICAL USE ⚠️**: This software is currently in early development (v0.x) and is NOT suitable for clinical practice yet. It is intended for evaluation, testing, and development purposes only. Do not use with real patient data or in clinical settings.
+
+## Demo
+
+[Demo](https://www.loom.com/share/1ccd4eec00eb4ddab700d32734f33c28)
+
+[![Watch Demo](.github/demo.gif)](https://www.loom.com/share/1ccd4eec00eb4ddab700d32734f33c28)
+
 
 ## Quick Start (5 minutes)
 
@@ -69,13 +76,6 @@ rm -rf node_modules pnpm-lock.yaml && pnpm install
 ```
 
 ---
-
-## Demo
-
-[Demo](https://www.loom.com/share/659d4f09fc814243addf8be64baf10aa)
-
-[![Watch Demo](.github/demo.png)](https://www.loom.com/share/659d4f09fc814243addf8be64baf10aa)
-
 
 ## Purpose and Philosophy
 
