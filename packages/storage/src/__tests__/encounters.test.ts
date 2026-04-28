@@ -42,7 +42,6 @@ if (!global.crypto.randomUUID) {
 // Note: In real app this would use AES-GCM encryption
 // @ts-ignore - mocking module
 await import("../secure-storage.js").then(module => {
-  const original = { ...module }
   // @ts-ignore
   module.loadSecureItem = async (key: string) => {
     const data = localStorage.getItem(key)

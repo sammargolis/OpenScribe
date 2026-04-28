@@ -5,7 +5,7 @@
 
 import test from "node:test"
 import assert from "node:assert/strict"
-import type { AuditLogEntry, AuditEventType } from "../types.js"
+import type { AuditLogEntry } from "../types.js"
 import {
   writeAuditEntry,
   getAuditEntries,

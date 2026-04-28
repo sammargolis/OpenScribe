@@ -1,15 +1,21 @@
 const { ipcMain, dialog, shell, systemPreferences, globalShortcut, app } = require('electron');
 const path = require('path');
-const { spawn, exec, execFile } = require('child_process');
+const { spawn, execFile } = require('child_process');
 const fs = require('fs');
 const https = require('https');
 const os = require('os');
-const { compareVersions, getDownloadUrl, getDownloadUrlFor } = require('./update-utils');
+const { compareVersions, getDownloadUrl } = require('./update-utils');
+const {
+  sanitizeErrorMessage,
+  computeWhisperHealthWaitProfile,
+  classifyWhisperHealthTimeout,
+  classifyWhisperDownloadFailure,
+} = require('./whisper-runtime-utils');
 const IPC_VERSION = '2026-03-10';
 let PostHog;
 try {
   ({ PostHog } = require('posthog-node'));
-} catch (error) {
+} catch {
   PostHog = null;
 }
 
@@ -89,13 +95,13 @@ function parseLastJsonObject(output) {
   for (let i = lines.length - 1; i >= 0; i -= 1) {
     try {
       return JSON.parse(lines[i]);
-    } catch (error) {
+    } catch {
       // Continue scanning backwards for a JSON payload line.
     }
   }
   try {
     return JSON.parse(String(output || '').trim());
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -179,7 +185,7 @@ function trackEvent(eventName, properties = {}) {
         ...properties,
       },
     });
-  } catch (error) {
+  } catch {
     // Silent fail
   }
 }
@@ -191,7 +197,7 @@ async function shutdownTelemetry() {
       posthogClient = null;
       console.log('Telemetry shut down');
     }
-  } catch (error) {
+  } catch {
     // Silent fail
   }
 }
@@ -319,8 +325,32 @@ let processingQueue = [];
 let isProcessing = false;
 let currentProcessingJob = null;
 let whisperServiceProcess = null;
+let whisperServiceLastExitCode = null;
 const WHISPER_LOCAL_PORT = Number(process.env.WHISPER_LOCAL_PORT || 8002);
 const WHISPER_LOCAL_HOST = process.env.WHISPER_LOCAL_HOST || '127.0.0.1';
+
+function whisperModelExistsOnDisk() {
+  const candidates = [
+    path.join(os.homedir(), 'Library', 'Application Support', 'pywhispercpp', 'models'),
+    path.join(os.homedir(), '.cache', 'pywhispercpp', 'models'),
+    path.join(os.homedir(), '.cache', 'whisper'),
+  ];
+  if (process.platform === 'win32') {
+    candidates.push(path.join(os.homedir(), 'AppData', 'Local', 'pywhispercpp', 'models'));
+  }
+  for (const candidate of candidates) {
+    try {
+      if (!fs.existsSync(candidate)) continue;
+      const files = fs.readdirSync(candidate);
+      if (files.some((name) => /^ggml-.*\.bin$/i.test(name))) {
+        return true;
+      }
+    } catch {
+      // Ignore fs probe failures and continue probing remaining locations.
+    }
+  }
+  return false;
+}
 
 function resolveWhisperServerCommand() {
   const backend = resolveBackendCommand(['whisper-server', '--port', String(WHISPER_LOCAL_PORT), '--model', 'tiny.en']);
@@ -359,26 +389,68 @@ async function isWhisperServiceHealthy() {
   }
 }
 
+async function waitForWhisperHealth(timeoutMs, intervalMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await isWhisperServiceHealthy()) {
+      return { healthy: true };
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return {
+    healthy: false,
+    processRunning: !!(whisperServiceProcess && !whisperServiceProcess.killed && whisperServiceProcess.exitCode === null),
+    lastExitCode: whisperServiceLastExitCode,
+  };
+}
+
 async function ensureWhisperService(mainWindow) {
   if (await isWhisperServiceHealthy()) {
-    return { success: true, running: true, reused: true };
+    return { success: true, running: true, reused: true, reason: 'READY' };
   }
 
   if (whisperServiceProcess && !whisperServiceProcess.killed) {
-    for (let i = 0; i < 15; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      if (await isWhisperServiceHealthy()) {
-        return { success: true, running: true, reused: true };
-      }
+    const reusedWait = await waitForWhisperHealth(6000, 250);
+    if (reusedWait.healthy) {
+      return { success: true, running: true, reused: true, reason: 'READY' };
     }
+    const reusedFailure = classifyWhisperHealthTimeout({
+      processRunning: reusedWait.processRunning,
+      lastExitCode: reusedWait.lastExitCode,
+      host: WHISPER_LOCAL_HOST,
+      port: WHISPER_LOCAL_PORT,
+    });
+    if (reusedFailure.reason === 'STARTING') {
+      trackEvent('error_occurred', { error_type: 'whisper_model_download_in_progress' });
+    } else {
+      trackEvent('error_occurred', { error_type: 'whisper_start_timeout' });
+    }
+    return {
+      success: false,
+      ...reusedFailure,
+      details: {
+        host: WHISPER_LOCAL_HOST,
+        port: WHISPER_LOCAL_PORT,
+        reusedProcess: true,
+        timeoutMs: 6000,
+      },
+    };
   }
 
   const backend = resolveWhisperServerCommand();
   if (!backend.command) {
-    return { success: false, error: 'Unable to resolve Whisper service command' };
+    return {
+      success: false,
+      code: 'WHISPER_UNHEALTHY',
+      reason: 'UNHEALTHY',
+      retryable: true,
+      error: 'Unable to resolve Whisper service command',
+      userMessage: 'Whisper service command is unavailable. Reinstall OpenScribe and retry.',
+    };
   }
 
   sendDebugLog(mainWindow, `Starting Whisper service: ${backend.command} ${backend.args.join(' ')}`);
+  whisperServiceLastExitCode = null;
   whisperServiceProcess = spawn(backend.command, backend.args, {
     cwd: backend.cwd,
     env: {
@@ -401,25 +473,57 @@ async function ensureWhisperService(mainWindow) {
   });
   whisperServiceProcess.on('close', (code) => {
     sendDebugLog(mainWindow, `Whisper service exited with code ${code}`);
+    whisperServiceLastExitCode = code;
     whisperServiceProcess = null;
   });
 
-  for (let i = 0; i < 20; i += 1) {
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    if (await isWhisperServiceHealthy()) {
-      return { success: true, running: true, reused: false };
-    }
+  const coldStart = !whisperModelExistsOnDisk();
+  const waitProfile = computeWhisperHealthWaitProfile({ coldStart });
+  const status = await waitForWhisperHealth(waitProfile.timeoutMs, waitProfile.intervalMs);
+  if (status.healthy) {
+    return { success: true, running: true, reused: false, reason: 'READY', coldStart };
   }
 
-  return { success: false, error: `Whisper service failed health check on ${WHISPER_LOCAL_HOST}:${WHISPER_LOCAL_PORT}` };
+  const classified = classifyWhisperHealthTimeout({
+    processRunning: status.processRunning,
+    lastExitCode: status.lastExitCode,
+    host: WHISPER_LOCAL_HOST,
+    port: WHISPER_LOCAL_PORT,
+  });
+  if (classified.reason === 'STARTING') {
+    trackEvent('error_occurred', { error_type: 'whisper_model_download_in_progress' });
+  } else {
+    trackEvent('error_occurred', { error_type: 'whisper_start_timeout' });
+  }
+
+  return {
+    success: false,
+    ...classified,
+    details: {
+      host: WHISPER_LOCAL_HOST,
+      port: WHISPER_LOCAL_PORT,
+      coldStart,
+      timeoutMs: waitProfile.timeoutMs,
+      processRunning: status.processRunning,
+      lastExitCode: status.lastExitCode,
+    },
+  };
 }
 
 async function ensureWhisperModelReady(mainWindow) {
   try {
     await runPythonScript(mainWindow, 'simple_recorder.py', ['download-whisper-model'], true);
-    return { success: true, model: process.env.WHISPER_LOCAL_MODEL || 'tiny.en' };
+    return { success: true, model: process.env.WHISPER_LOCAL_MODEL || 'tiny.en', reason: 'READY' };
   } catch (error) {
-    return { success: false, error: error.message };
+    trackEvent('error_occurred', { error_type: 'whisper_model_download_failed' });
+    const failure = classifyWhisperDownloadFailure(error?.message || '');
+    return {
+      success: false,
+      ...failure,
+      details: {
+        reason: failure.reason,
+      },
+    };
   }
 }
 
@@ -441,7 +545,7 @@ async function processNextInQueue(mainWindow) {
   console.log(`🔄 Processing queued job: ${currentProcessingJob.sessionName}`);
 
   try {
-    const result = await runPythonScript(
+    await runPythonScript(
       mainWindow,
       'simple_recorder.py',
       ['process', currentProcessingJob.audioFile, '--name', currentProcessingJob.sessionName]
@@ -489,12 +593,6 @@ async function processNextInQueue(mainWindow) {
     currentProcessingJob = null;
     setTimeout(() => processNextInQueue(mainWindow), 1000);
   }
-}
-
-function addToProcessingQueue(mainWindow, audioFile, sessionName) {
-  processingQueue.push({ audioFile, sessionName });
-  console.log(`📋 Added to processing queue: ${sessionName} (Queue size: ${processingQueue.length})`);
-  processNextInQueue(mainWindow);
 }
 
 function truncateForPrompt(value, maxChars) {
@@ -1266,7 +1364,7 @@ function registerOpenScribeIpcHandlers(mainWindow) {
         sendDebugLog(mainWindow, 'AI model download completed successfully');
         try {
           await runPythonScript(mainWindow, 'simple_recorder.py', ['set-model', selectedModel], true);
-        } catch (e) {
+        } catch {
           // Non-fatal
         }
         trackEvent('setup_completed', { step: 'ollama_and_model' });
@@ -1294,15 +1392,19 @@ function registerOpenScribeIpcHandlers(mainWindow) {
       sendDebugLog(mainWindow, `$ ${backend.command} ${backend.args.join(' ')}`);
 
       return new Promise((resolve) => {
+        let stdout = '';
+        let stderr = '';
         const process = spawn(backend.command, backend.args, { cwd: backend.cwd, stdio: 'pipe' });
 
         process.stdout.on('data', (data) => {
           const text = data.toString().trim();
+          stdout += `${data.toString()}`;
           if (text) sendDebugLog(mainWindow, text);
         });
 
         process.stderr.on('data', (data) => {
           const text = data.toString().trim();
+          stderr += `${data.toString()}`;
           if (text) sendDebugLog(mainWindow, 'STDERR: ' + text);
         });
 
@@ -1312,17 +1414,35 @@ function registerOpenScribeIpcHandlers(mainWindow) {
             resolve(ok({ message: 'Whisper model ready' }));
           } else {
             sendDebugLog(mainWindow, `Whisper model download failed with exit code: ${code}`);
-            resolve(fail('WHISPER_DOWNLOAD_FAILED', 'Failed to download Whisper model'));
+            trackEvent('error_occurred', { error_type: 'whisper_model_download_failed' });
+            const failure = classifyWhisperDownloadFailure(stderr || stdout, code);
+            resolve(fail('WHISPER_DOWNLOAD_FAILED', 'Failed to download Whisper model', {
+              reason: failure.reason,
+              exitCode: code,
+              error: failure.error,
+              stderr: sanitizeErrorMessage(stderr),
+              stdout: sanitizeErrorMessage(stdout),
+            }));
           }
         });
 
         process.on('error', (error) => {
           sendDebugLog(mainWindow, `Process error: ${error.message}`);
-          resolve(fail('WHISPER_DOWNLOAD_FAILED', error.message));
+          trackEvent('error_occurred', { error_type: 'whisper_model_download_failed' });
+          const failure = classifyWhisperDownloadFailure(error.message);
+          resolve(fail('WHISPER_DOWNLOAD_FAILED', failure.error, {
+            reason: failure.reason,
+            error: failure.error,
+          }));
         });
       });
     } catch (error) {
-      return fail('WHISPER_DOWNLOAD_FAILED', error.message);
+      trackEvent('error_occurred', { error_type: 'whisper_model_download_failed' });
+      const failure = classifyWhisperDownloadFailure(error.message);
+      return fail('WHISPER_DOWNLOAD_FAILED', failure.error, {
+        reason: failure.reason,
+        error: failure.error,
+      });
     }
   });
 
@@ -1390,7 +1510,7 @@ function registerOpenScribeIpcHandlers(mainWindow) {
         try {
           const data = JSON.parse(lines[i]);
           return { success: true, installed: data.installed };
-        } catch (e) {
+        } catch {
           continue;
         }
       }
@@ -1643,22 +1763,32 @@ function registerOpenScribeIpcHandlers(mainWindow) {
 
       const whisperStatus = await ensureWhisperService(mainWindow);
       if (!whisperStatus?.success) {
+        const reason = whisperStatus?.reason || 'UNHEALTHY';
+        const userMessage = reason === 'STARTING'
+          ? 'Whisper is still initializing in the background. Retry in a few seconds.'
+          : 'Whisper service is not healthy. Retry in a few seconds or restart OpenScribe.';
         trackEvent('error_occurred', { error_type: 'mixed_runtime_whisper_unhealthy' });
-        return fail(
+        const response = fail(
           'WHISPER_UNHEALTHY',
-          'Whisper service is not healthy. Retry in a few seconds or restart OpenScribe.',
-          { setupStatus, whisperStatus },
+          userMessage,
+          { setupStatus, whisperStatus, reason },
         );
+        response.code = reason;
+        response.userMessage = userMessage;
+        return response;
       }
 
       const whisperModelStatus = await ensureWhisperModelReady(mainWindow);
       if (!whisperModelStatus?.success) {
         trackEvent('error_occurred', { error_type: 'mixed_runtime_whisper_model_unavailable' });
-        return fail(
+        const response = fail(
           'WHISPER_MODEL_UNAVAILABLE',
-          'Whisper model setup failed. Check your network connection and retry.',
-          { setupStatus, whisperModelStatus },
+          whisperModelStatus?.userMessage || 'Whisper model setup failed. Check your network connection and retry.',
+          { setupStatus, whisperModelStatus, reason: whisperModelStatus?.reason || 'MODEL_DOWNLOAD_FAILED' },
         );
+        response.code = whisperModelStatus?.reason || 'MODEL_DOWNLOAD_FAILED';
+        response.userMessage = whisperModelStatus?.userMessage || 'Whisper model setup failed. Check your network connection and retry.';
+        return response;
       }
 
       return ok({
@@ -1709,12 +1839,19 @@ function registerOpenScribeIpcHandlers(mainWindow) {
 
       const whisperStatus = await ensureWhisperService(mainWindow);
       if (!whisperStatus?.success) {
+        const reason = whisperStatus?.reason || 'UNHEALTHY';
+        const userMessage = reason === 'STARTING'
+          ? 'Whisper is still initializing in the background. Retry in a few seconds.'
+          : 'Whisper service is not healthy. Retry setup or restart OpenScribe.';
         trackEvent('error_occurred', { error_type: 'local_runtime_whisper_unhealthy' });
-        return fail(
+        const response = fail(
           'WHISPER_UNHEALTHY',
-          'Whisper service is not healthy. Retry setup or restart OpenScribe.',
-          whisperStatus,
+          userMessage,
+          { whisperStatus, reason },
         );
+        response.code = reason;
+        response.userMessage = userMessage;
+        return response;
       }
 
       const currentModelRaw = await runPythonScript(mainWindow, 'simple_recorder.py', ['get-model'], true);
@@ -1885,7 +2022,7 @@ async function checkForUpdates() {
             releaseName: release.name || `Version ${latestVersion}`,
             downloadUrl: getDownloadUrl(release.assets),
           }));
-        } catch (error) {
+        } catch {
           resolve(fail('UPDATE_PARSE_FAILED', 'Failed to parse update data'));
         }
       });

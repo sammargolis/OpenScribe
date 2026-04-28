@@ -406,26 +406,16 @@ function registerPermissionHandlers() {
     console.error('Failed to create audit log directory:', err);
   });
 
-  ipcMain.handle('audit-log:write', async (_event, entry) => {
-    try {
-      // For now, we'll return success and let the renderer handle localStorage
-      // Future enhancement: write to filesystem for archival
-      return { success: true };
-    } catch (error) {
-      console.error('Audit log write failed:', error);
-      return { success: false, error: error.message };
-    }
+  ipcMain.handle('audit-log:write', async () => {
+    // For now, we'll return success and let the renderer handle localStorage.
+    // Future enhancement: write to filesystem for archival.
+    return { success: true };
   });
 
-  ipcMain.handle('audit-log:read', async (_event, filter) => {
-    try {
-      // For now, return empty array - renderer uses localStorage
-      // Future enhancement: read from archived filesystem logs
-      return [];
-    } catch (error) {
-      console.error('Audit log read failed:', error);
-      return [];
-    }
+  ipcMain.handle('audit-log:read', async () => {
+    // For now, return empty array - renderer uses localStorage.
+    // Future enhancement: read from archived filesystem logs.
+    return [];
   });
 
   ipcMain.handle('audit-log:export', async (_event, options) => {

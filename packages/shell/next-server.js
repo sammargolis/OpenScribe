@@ -24,7 +24,7 @@ const resolveNodePath = () => {
         console.log(`Using Node.js at: ${nodePath}`);
         return nodePath;
       }
-    } catch (error) {
+    } catch {
       // Continue to next path
     }
   }

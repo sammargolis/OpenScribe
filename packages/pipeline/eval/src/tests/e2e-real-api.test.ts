@@ -266,7 +266,7 @@ test("REAL E2E: Complete pipeline with actual Whisper API", { timeout: 60_000 },
   setTimeout(() => process.exit(0), 100)
 })
 
-test("REAL E2E: Error handling with invalid API key", { timeout: 10_000 }, async (t) => {
+test("REAL E2E: Error handling with invalid API key", { timeout: 10_000 }, async (_t) => {
   console.log("\n" + "=".repeat(80))
   console.log("TEST: API Error Handling")
   console.log("=".repeat(80))

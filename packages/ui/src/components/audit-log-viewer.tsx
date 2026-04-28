@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@ui/lib/ui/button"
 import { Label } from "@ui/lib/ui/label"
 import type { AuditLogEntry, AuditLogFilter, AuditEventType } from "@storage/types"
@@ -17,11 +17,7 @@ export function AuditLogViewer({ onClose }: AuditLogViewerProps) {
   const [filter, setFilter] = useState<AuditLogFilter>({})
   const [exporting, setExporting] = useState(false)
 
-  useEffect(() => {
-    loadEntries()
-  }, [filter])
-
-  async function loadEntries() {
+  const loadEntries = useCallback(async () => {
     setLoading(true)
     try {
       // Flush any pending entries first
@@ -34,7 +30,11 @@ export function AuditLogViewer({ onClose }: AuditLogViewerProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filter])
+
+  useEffect(() => {
+    loadEntries()
+  }, [loadEntries])
 
   async function handleExport(format: "csv" | "json") {
     setExporting(true)

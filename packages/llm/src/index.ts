@@ -23,7 +23,7 @@ export interface LLMRequest {
 function validateAnthropicHttps(client: Anthropic): void {
   // The Anthropic SDK uses https://api.anthropic.com by default
   // We validate the baseURL if it's been customized
-  const baseURL = (client as any).baseURL || "https://api.anthropic.com"
+  const baseURL = (client as Anthropic & { baseURL?: string }).baseURL || "https://api.anthropic.com"
   
   try {
     const parsed = new URL(baseURL)

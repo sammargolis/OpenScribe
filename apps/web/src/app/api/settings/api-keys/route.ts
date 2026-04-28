@@ -7,7 +7,6 @@ import { writeAuditEntry } from "@storage/audit-log"
 // Encryption configuration
 const ALGORITHM = "aes-256-gcm"
 const IV_LENGTH = 12
-const AUTH_TAG_LENGTH = 16
 const KEY_LENGTH = 32
 
 /**
@@ -30,7 +29,9 @@ async function getEncryptionKey(): Promise<Buffer> {
     // Ensure directory exists
     try {
       await fs.mkdir(configDir, { recursive: true })
-    } catch {}
+    } catch {
+      // Directory may already exist or not be creatable yet.
+    }
     
     // Store key with restrictive permissions
     await fs.writeFile(keyPath, key, { mode: 0o600 })
@@ -84,13 +85,14 @@ async function decryptData(payload: string): Promise<string> {
 // Get the app data directory for storing config
 function getConfigPath(): string {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { app } = require("electron")
     if (app && app.getPath) {
       // Electron environment
       const userDataPath = app.getPath("userData")
       return path.join(userDataPath, "api-keys.json")
     }
-  } catch (error) {
+  } catch {
     // Electron not available (development or build time)
   }
   // Development environment - use temp directory
@@ -163,7 +165,7 @@ export async function GET() {
       const keys = JSON.parse(decrypted)
       
       return NextResponse.json(keys)
-    } catch (error) {
+    } catch {
       // File doesn't exist or is invalid, return empty keys
       return NextResponse.json({
         openaiApiKey: "",

@@ -30,7 +30,7 @@ beforeEach(() => {
       encrypt: vi.fn().mockImplementation(async () => {
         return new Uint8Array([1, 2, 3, 4, 5]).buffer
       }),
-      decrypt: vi.fn().mockImplementation(async (_, __, data) => {
+      decrypt: vi.fn().mockImplementation(async (_, __, _data) => {
         // Return mock decrypted data
         return new TextEncoder().encode(JSON.stringify({ test: "data" })).buffer
       }),
