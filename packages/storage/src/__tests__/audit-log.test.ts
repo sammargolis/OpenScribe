@@ -6,6 +6,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 import type { AuditLogEntry } from "../types.js"
+import { saveSecureItem } from "../secure-storage.js"
 import {
   writeAuditEntry,
   getAuditEntries,
@@ -18,10 +19,13 @@ import {
   withAudit,
 } from "../audit-log.js"
 
-// Mock localStorage
+// Mock localStorage.
+// audit-log.ts reads the retention policy off the bare `localStorage` global,
+// while secure-storage.ts writes through `window.localStorage`, so both have to
+// resolve to the same store.
 const mockStorage: Record<string, string> = {}
-global.localStorage = {
-  getItem: (key: string) => mockStorage[key] || null,
+const localStorageMock = {
+  getItem: (key: string) => mockStorage[key] ?? null,
   setItem: (key: string, value: string) => {
     mockStorage[key] = value
   },
@@ -31,40 +35,36 @@ global.localStorage = {
   clear: () => {
     Object.keys(mockStorage).forEach((key) => delete mockStorage[key])
   },
-  length: 0,
-  key: () => null,
+  get length() {
+    return Object.keys(mockStorage).length
+  },
+  key: (index: number) => Object.keys(mockStorage)[index] ?? null,
 } as Storage
 
-// Mock crypto.
-// Node exposes globalThis.crypto as a getter-only accessor, so a plain
-// assignment throws. defineProperty replaces the accessor with a value.
-let uuidCounter = 0
-const cryptoMock = {
-  randomUUID: () => `test-uuid-${++uuidCounter}`,
-  subtle: {
-    encrypt: async (algorithm: any, key: any, data: any) => {
-      const dataStr = typeof data === "string" ? data : new TextDecoder().decode(data)
-      return new TextEncoder().encode(`encrypted:${dataStr}`)
-    },
-    decrypt: async (algorithm: any, key: any, data: any) => {
-      const dataStr = new TextDecoder().decode(data)
-      return new TextEncoder().encode(dataStr.replace("encrypted:", ""))
-    },
-    importKey: async () => ({} as CryptoKey),
-  } as any,
-} as Crypto
-
-Object.defineProperty(globalThis, "crypto", {
-  value: cryptoMock,
+Object.defineProperty(globalThis, "localStorage", {
+  value: localStorageMock,
   configurable: true,
   writable: true,
 })
 
+// secure-storage.ts short-circuits on `typeof window === "undefined"`, so
+// without a window stub every save/load is a silent no-op and nothing the audit
+// log writes is ever persisted.
+Object.defineProperty(globalThis, "window", {
+  value: { localStorage: localStorageMock },
+  configurable: true,
+  writable: true,
+})
+
+// No crypto stub: Node's globalThis.crypto is a full Web Crypto implementation,
+// so these tests exercise real AES-GCM encryption and real randomUUID.
+
 test("Audit Log Tests", async (t) => {
-  t.beforeEach(() => {
-    // Clear mock storage before each test
+  t.beforeEach(async () => {
+    // Drain anything a previous test left queued (writeAuditEntry queues, it does
+    // not write), then clear storage so each test starts from an empty log.
+    await flushAuditQueue()
     Object.keys(mockStorage).forEach((key) => delete mockStorage[key])
-    uuidCounter = 0
   })
 
   await t.test("writeAuditEntry creates entry with all required fields", async () => {
@@ -281,9 +281,7 @@ test("Audit Log Tests", async (t) => {
     // Manually inject old entry
     const currentLogs = await getAuditEntries()
     const allLogs = [...currentLogs, oldEntry]
-    await import("../secure-storage.js").then((m) =>
-      m.saveSecureItem("openscribe_audit_logs", allLogs)
-    )
+    await saveSecureItem("openscribe_audit_logs", allLogs)
 
     // Set retention to 90 days
     setAuditRetentionDays(90)
@@ -350,7 +348,11 @@ test("Audit Log Tests", async (t) => {
     assert.equal(entries[0].event_type, "encounter.created")
     assert.equal(entries[0].resource_id, "result-123") // Extracted from result
     assert.equal(entries[0].success, true)
-    assert.ok(entries[0].metadata?.duration_ms)
+    // A sub-millisecond operation legitimately records duration_ms === 0, so
+    // assert on the type and range rather than on truthiness.
+    assert.equal(typeof entries[0].metadata?.duration_ms, "number")
+    assert.ok((entries[0].metadata!.duration_ms as number) >= 0)
+    assert.equal(entries[0].metadata?.source, "test")
   })
 
   await t.test("withAudit wrapper logs failure", async () => {

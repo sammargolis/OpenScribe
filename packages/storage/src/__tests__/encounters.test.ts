@@ -11,10 +11,12 @@ import type { Encounter } from "../types.js"
  * Audio is processed in memory only for transcription, then discarded.
  */
 
-// Mock localStorage for Node.js environment
+// Mock localStorage for Node.js environment.
+// secure-storage.ts writes through `window.localStorage` and short-circuits when
+// `window` is undefined, so both globals must exist and share one store.
 const mockStorage: Record<string, string> = {}
-global.localStorage = {
-  getItem: (key: string) => mockStorage[key] || null,
+const localStorageMock = {
+  getItem: (key: string) => mockStorage[key] ?? null,
   setItem: (key: string, value: string) => {
     mockStorage[key] = value
   },
@@ -24,38 +26,28 @@ global.localStorage = {
   clear: () => {
     Object.keys(mockStorage).forEach(key => delete mockStorage[key])
   },
-  key: (index: number) => Object.keys(mockStorage)[index] || null,
-  length: Object.keys(mockStorage).length,
+  key: (index: number) => Object.keys(mockStorage)[index] ?? null,
+  get length() {
+    return Object.keys(mockStorage).length
+  },
 } as Storage
 
-// Mock crypto.randomUUID for testing.
-// globalThis.crypto is a getter-only accessor in Node, so replace the whole
-// property with defineProperty rather than assigning to it.
-let uuidCounter = 0
-Object.defineProperty(globalThis, "crypto", {
-  value: {
-    ...(globalThis.crypto ?? {}),
-    subtle: globalThis.crypto?.subtle,
-    randomUUID: () => `test-uuid-${++uuidCounter}`,
-  } as Crypto,
+Object.defineProperty(globalThis, "localStorage", {
+  value: localStorageMock,
   configurable: true,
   writable: true,
 })
 
-// Mock secure storage for testing
-// Note: In real app this would use AES-GCM encryption
-// @ts-ignore - mocking module
-await import("../secure-storage.js").then(module => {
-  // @ts-ignore
-  module.loadSecureItem = async (key: string) => {
-    const data = localStorage.getItem(key)
-    return data ? JSON.parse(data) : null
-  }
-  // @ts-ignore
-  module.saveSecureItem = async (key: string, value: any) => {
-    localStorage.setItem(key, JSON.stringify(value))
-  }
+Object.defineProperty(globalThis, "window", {
+  value: { localStorage: localStorageMock },
+  configurable: true,
+  writable: true,
 })
+
+// No crypto or secure-storage stubs: Node's globalThis.crypto is a full Web
+// Crypto implementation, so these tests run against real AES-GCM encryption via
+// secure-storage.ts. (The previous stub tried to reassign ESM namespace exports,
+// which silently does nothing.)
 
 test("saveEncounters strips audio_blob before persistence", async () => {
   // Clear storage
@@ -98,6 +90,10 @@ test("saveEncounters strips audio_blob before persistence", async () => {
   // Double-check raw localStorage doesn't contain audio data
   const rawData = localStorage.getItem("openscribe_encounters")
   assert.ok(rawData, "Should have saved data")
+  assert.ok(
+    rawData.startsWith("enc.v2."),
+    "Encounters must be persisted as an encrypted v2 payload"
+  )
   assert.ok(
     !rawData.includes("audio"),
     "Raw storage should not contain 'audio' key"
