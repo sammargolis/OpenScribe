@@ -9,7 +9,7 @@ import {
   type PipelineError,
 } from "@pipeline-errors"
 import type { Encounter } from "@storage/types"
-import { useEncounters, EncounterList, IdleView, NewEncounterForm, RecordingView, ProcessingView, ErrorBoundary, PermissionsDialog, SettingsDialog, SettingsBar, ModelIndicator, LocalSetupWizard, useHttpsWarning } from "@ui"
+import { useEncounters, EncounterList, IdleView, NewEncounterForm, RecordingView, ProcessingView, ErrorBoundary, PermissionsDialog, SettingsDialog, SettingsBar, ModelIndicator, LocalSetupWizard, useHttpsWarning, useOnlineStatus, resolveCapabilityStatus, OfflineBlockedDialog } from "@ui"
 import { NoteEditor } from "@note-rendering"
 import { useAudioRecorder, type RecordedSegment, warmupMicrophonePermission, warmupSystemAudioPermission } from "@audio"
 import { useSegmentUpload, type UploadError } from "@transcription";
@@ -632,6 +632,24 @@ function HomePageContent() {
 
   const useLocalBackend = processingMode === "local" && localBackendAvailable
 
+  // Offline readiness (#17). Only mixed mode needs the network, so the
+  // reachability probe stays off entirely in local-only mode.
+  const onlineStatus = useOnlineStatus({ enableProbe: processingMode === "mixed" })
+  const capabilityStatus = resolveCapabilityStatus({
+    online: onlineStatus.online,
+    processingMode,
+    hasApiKey: hasAnthropicApiKey,
+    whisperReady: !showMixedRuntimePrompt && !showLocalRuntimePrompt,
+  })
+  const [showOfflineBlockedDialog, setShowOfflineBlockedDialog] = useState(false)
+  const offlineBlocksRecording = !capabilityStatus.canStartRecording && capabilityStatus.fix === "switch-to-local"
+  const offlineOverrideRef = useRef(false)
+  const pendingRecordingDataRef = useRef<{ patient_name: string; patient_id: string; visit_reason: string } | null>(null)
+
+  useEffect(() => {
+    if (!offlineBlocksRecording) setShowOfflineBlockedDialog(false)
+  }, [offlineBlocksRecording])
+
   const handleUploadError = useCallback((error: UploadError) => {
     setWorkflowError(error)
     setTranscriptionStatus("failed")
@@ -1035,6 +1053,14 @@ function HomePageContent() {
     visit_reason: string
   }) => {
     try {
+      // Guard (#17): never silently let a full visit be recorded when note
+      // generation cannot run in the current mode + connectivity state.
+      if (offlineBlocksRecording && !offlineOverrideRef.current) {
+        pendingRecordingDataRef.current = data
+        setShowOfflineBlockedDialog(true)
+        return
+      }
+      offlineOverrideRef.current = false
       if (useLocalBackend) {
         const readiness = await ensureLocalRuntimeReady()
         if (!readiness.ok) {
@@ -1744,6 +1770,29 @@ function HomePageContent() {
           </div>
         </div>
       )}
+      {showOfflineBlockedDialog && (
+        <OfflineBlockedDialog
+          status={capabilityStatus}
+          localBackendAvailable={localBackendAvailable}
+          onDismiss={() => setShowOfflineBlockedDialog(false)}
+          onRecheck={onlineStatus.recheck}
+          onSwitchToLocal={async () => {
+            const switched = await handleProcessingModeChange("local")
+            if (switched) setShowOfflineBlockedDialog(false)
+          }}
+          onOpenSettings={() => {
+            setShowOfflineBlockedDialog(false)
+            setShowSettingsDialog(true)
+          }}
+          onProceedAnyway={() => {
+            const pending = pendingRecordingDataRef.current
+            setShowOfflineBlockedDialog(false)
+            if (!pending) return
+            offlineOverrideRef.current = true
+            void handleStartRecording(pending)
+          }}
+        />
+      )}
       {httpsWarning && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-destructive px-4 py-2 text-center text-sm font-semibold text-destructive-foreground">
           {httpsWarning}
@@ -1760,7 +1809,7 @@ function HomePageContent() {
             disabled={view.type === "recording"}
           />
           <ModelIndicator processingMode={processingMode} />
-          <SettingsBar onOpenSettings={handleOpenSettings} />
+          <SettingsBar onOpenSettings={handleOpenSettings} capabilityStatus={capabilityStatus} />
         </div>
         <main className="flex flex-1 flex-col overflow-hidden bg-background">
           {renderMainContent()}
