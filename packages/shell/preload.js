@@ -210,6 +210,7 @@ contextBridge.exposeInMainWorld('desktop', {
         'pull-model',
         'ensure-whisper-service',
         'whisper-service-status',
+        'whisper-diagnostics',
         'check-for-updates',
         'check-announcements',
         'open-release-page',

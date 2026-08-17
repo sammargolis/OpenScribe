@@ -16,6 +16,7 @@ import argparse
 import os
 import sys
 import tempfile
+import threading
 from pathlib import Path
 from typing import Optional
 
@@ -57,6 +58,7 @@ app.add_middleware(
 )
 
 transcriber: Optional[WhisperTranscriber] = None
+LOAD_STATE = {"stage": "starting", "error": "", "cause": ""}
 
 
 def initialize_transcriber(model_size: str = "tiny.en", backend: str = "cpp", gpu: bool = False) -> None:
@@ -68,9 +70,32 @@ def initialize_transcriber(model_size: str = "tiny.en", backend: str = "cpp", gp
     os.environ["OPENSCRIBE_WHISPER_BACKEND"] = backend
     os.environ["OPENSCRIBE_WHISPER_GPU"] = "1" if gpu else "0"
 
-    print(f"Initializing Whisper transcriber (model={model_size}, backend={backend}, gpu={gpu})")
+    print(f"Initializing Whisper transcriber (model={model_size}, backend={backend}, gpu={gpu})", flush=True)
+    LOAD_STATE["stage"] = "loading_model"
     transcriber = WhisperTranscriber(model_size=model_size)
-    print("✓ Whisper transcriber ready")
+    LOAD_STATE["stage"] = "ready"
+    print("✓ Whisper transcriber ready", flush=True)
+
+
+def initialize_transcriber_async(model_size: str, backend: str, gpu: bool) -> None:
+    """
+    Load the model off the event loop so the port binds right away.
+
+    A synchronous load blocks uvicorn's startup, so /health cannot answer while
+    the ggml model downloads and the Electron shell cannot tell "still starting"
+    apart from "dead" (issue #56).
+    """
+
+    def run() -> None:
+        try:
+            initialize_transcriber(model_size=model_size, backend=backend, gpu=gpu)
+        except Exception as exc:
+            LOAD_STATE["stage"] = "failed"
+            LOAD_STATE["error"] = str(exc)
+            LOAD_STATE["cause"] = getattr(exc, "cause", "") or "model_load_failed"
+            print(f"ERROR: Whisper transcriber failed to load: {exc}", file=sys.stderr, flush=True)
+
+    threading.Thread(target=run, name="whisper-model-loader", daemon=True).start()
 
 
 @app.get("/")
@@ -78,15 +103,35 @@ async def root():
     return {
         "status": "running",
         "ready": transcriber is not None,
+        "stage": LOAD_STATE["stage"],
         "backend": transcriber.get_backend_info() if transcriber else None,
+    }
+
+
+@app.get("/status")
+async def status():
+    """Always 200 so callers can distinguish a starting service from a dead one."""
+    return {
+        "ready": transcriber is not None,
+        "stage": LOAD_STATE["stage"],
+        "error": LOAD_STATE["error"],
+        "cause": LOAD_STATE["cause"],
+        **(transcriber.get_backend_info() if transcriber else {}),
     }
 
 
 @app.get("/health")
 async def health():
     if transcriber is None:
-        raise HTTPException(status_code=503, detail="Whisper transcriber not initialized")
-    return {"status": "healthy", **transcriber.get_backend_info()}
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "stage": LOAD_STATE["stage"],
+                "error": LOAD_STATE["error"],
+                "cause": LOAD_STATE["cause"],
+            },
+        )
+    return {"status": "healthy", "stage": LOAD_STATE["stage"], **transcriber.get_backend_info()}
 
 
 @app.post("/v1/audio/transcriptions")
@@ -100,7 +145,14 @@ async def transcribe_audio(
 ):
     del prompt, temperature
     if transcriber is None:
-        raise HTTPException(status_code=503, detail="Whisper transcriber not initialized")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "stage": LOAD_STATE["stage"],
+                "error": LOAD_STATE["error"],
+                "cause": LOAD_STATE["cause"],
+            },
+        )
 
     if model and model != transcriber.model_size:
         print(f"Request model '{model}' differs from loaded model '{transcriber.model_size}', ignoring request value")
@@ -144,7 +196,7 @@ async def startup_event():
     model_size = os.environ.get("WHISPER_LOCAL_MODEL", "tiny.en")
     backend = os.environ.get("WHISPER_LOCAL_BACKEND", "cpp")
     gpu_enabled = os.environ.get("WHISPER_LOCAL_GPU", "1").strip().lower() in {"1", "true", "yes", "on"}
-    initialize_transcriber(model_size=model_size, backend=backend, gpu=gpu_enabled)
+    initialize_transcriber_async(model_size=model_size, backend=backend, gpu=gpu_enabled)
 
 
 def main():

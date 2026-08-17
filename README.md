@@ -177,6 +177,7 @@ OpenScribe supports three workflows. **Mixed web mode is the default path.**
 - Start everything with one command: `pnpm dev:local`
 - Configure with `TRANSCRIPTION_PROVIDER=whisper_local` in `apps/web/.env.local`
 - [Setup guide](./docs/WHISPER-LOCAL-SETUP.md)
+- [Troubleshooting `WHISPER_UNHEALTHY` and model-download failures](./docs/WHISPER-TROUBLESHOOTING.md)
 
 **Language support**
 - Default model `tiny.en` as well as all `.en`-models transcribes English only

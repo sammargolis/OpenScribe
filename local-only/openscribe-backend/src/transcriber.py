@@ -47,6 +47,16 @@ except ImportError:
 
 WHISPER_AVAILABLE = WHISPER_CPP_AVAILABLE or OPENAI_WHISPER_AVAILABLE
 
+# Model-cache resolution lives in whisper_models so the same writable directory
+# is used by the CLI download command, the whisper server and the recorder.
+try:
+    from . import whisper_models  # type: ignore
+except ImportError:  # pragma: no cover - flat sys.path import (PyInstaller, whisper_server.py)
+    try:
+        import whisper_models  # type: ignore
+    except ImportError:
+        whisper_models = None  # type: ignore
+
 
 class WhisperTranscriber:
     """
@@ -181,13 +191,31 @@ class WhisperTranscriber:
         import multiprocessing
         n_threads = max(1, multiprocessing.cpu_count() - 2)
 
-        # pywhispercpp auto-downloads the model if not present.
+        # Resolve the model file ourselves rather than letting pywhispercpp
+        # auto-download it: pywhispercpp downloads with no timeout and into a
+        # directory we cannot redirect, which is how a first-ever start ends up
+        # hanging forever (WHISPER_UNHEALTHY) or failing inside a read-only
+        # app bundle. `model_ref` falls back to the plain model name so behaviour
+        # never regresses if resolution fails.
+        model_ref = self.model_size
+        if whisper_models is not None:
+            try:
+                model_ref = str(whisper_models.ensure_model(self.model_size))
+                logger.info("Using whisper.cpp model file: %s", model_ref)
+            except Exception as model_exc:
+                logger.warning(
+                    "Could not pre-resolve whisper.cpp model %s (%s); falling back to pywhispercpp resolution",
+                    self.model_size,
+                    model_exc,
+                )
+                model_ref = self.model_size
+
         # If GPU allocation fails (common when Ollama already owns VRAM),
         # retry on CPU so transcription still succeeds.
         os.environ["GGML_METAL"] = "1" if wants_gpu else "0"
         os.environ["WHISPER_CPP_USE_GPU"] = os.environ["GGML_METAL"]
         try:
-            self.model = WhisperCppModel(self.model_size, n_threads=n_threads)
+            self.model = WhisperCppModel(model_ref, n_threads=n_threads)
         except Exception as gpu_exc:
             if wants_gpu:
                 logger.warning(
@@ -196,7 +224,7 @@ class WhisperTranscriber:
                 )
                 os.environ["GGML_METAL"] = "0"
                 os.environ["WHISPER_CPP_USE_GPU"] = "0"
-                self.model = WhisperCppModel(self.model_size, n_threads=n_threads)
+                self.model = WhisperCppModel(model_ref, n_threads=n_threads)
             else:
                 raise
         self.backend = "whisper.cpp"
@@ -209,8 +237,17 @@ class WhisperTranscriber:
     def _load_openai_whisper(self) -> None:
         """Load model using openai-whisper (PyTorch)."""
         logger.info(f"Loading openai-whisper model: {self.model_size}")
-        # Keep model cache inside app/project writable area (not ~/.cache).
-        model_cache_dir = Path(__file__).parent.parent / "models" / "openai-whisper"
+        # Never derive the cache from __file__: inside a packaged .app that
+        # resolves to read-only Contents/Resources, so mkdir raises EACCES and
+        # the user only sees "Failed to download Whisper model".
+        model_cache_dir = None
+        if whisper_models is not None:
+            try:
+                model_cache_dir = whisper_models.resolve_models_dir(create=True) / "openai-whisper"
+            except Exception as dir_exc:
+                logger.warning("Could not resolve writable Whisper cache dir (%s)", dir_exc)
+        if model_cache_dir is None:
+            model_cache_dir = Path.home() / ".cache" / "openscribe" / "openai-whisper"
         model_cache_dir.mkdir(parents=True, exist_ok=True)
         self.model = openai_whisper.load_model(
             self.model_size,

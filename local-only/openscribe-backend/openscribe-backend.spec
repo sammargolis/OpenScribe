@@ -29,6 +29,16 @@ hiddenimports = [
     'pywhispercpp',
     'pywhispercpp.model',
     'pywhispercpp.constants',
+    'pywhispercpp.utils',
+    '_pywhispercpp',
+
+    # Whisper model cache + download (issue #56). requests/certifi must ship or
+    # the ggml download fails TLS verification inside the packaged app.
+    'src.whisper_models',
+    'requests',
+    'certifi',
+    'platformdirs',
+    'tqdm',
 
     # Audio processing
     'sounddevice',
