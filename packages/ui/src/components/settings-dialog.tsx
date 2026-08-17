@@ -6,6 +6,7 @@ import { Button } from "@ui/lib/ui/button"
 import { Label } from "@ui/lib/ui/label"
 import type { NoteLength, ProcessingMode } from "@storage/preferences"
 import { getAuditRetentionDays, setAuditRetentionDays, purgeAllAuditLogs } from "@storage/audit-log"
+import { TRANSCRIPTION_LANGUAGE_OPTIONS, normalizeTranscriptionLanguage } from "@ui/lib/transcription-languages"
 import { AuditLogViewer } from "./audit-log-viewer"
 
 interface SettingsDialogProps {
@@ -28,6 +29,9 @@ interface SettingsDialogProps {
   lastMicReadinessMetrics?: { rms: number; peak: number } | null
   lastFailureCode?: string
   onRunMicrophoneCheck: () => Promise<void>
+  /** Whisper transcription language. "auto" defers to WHISPER_LANGUAGE / auto-detect. */
+  transcriptionLanguage?: string
+  onTranscriptionLanguageChange?: (value: string) => void
 }
 
 export function SettingsDialog({
@@ -50,6 +54,8 @@ export function SettingsDialog({
   lastMicReadinessMetrics,
   lastFailureCode,
   onRunMicrophoneCheck,
+  transcriptionLanguage,
+  onTranscriptionLanguageChange,
 }: SettingsDialogProps) {
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
@@ -331,6 +337,41 @@ export function SettingsDialog({
                 Purge All Logs
               </Button>
             </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-border" />
+
+          {/* Transcription Language */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium text-foreground">Transcription Language</Label>
+            <p className="text-sm text-muted-foreground">
+              Language spoken during the encounter. Auto keeps the existing server default.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="transcription-language" className="text-sm font-medium text-foreground">
+                Spoken Language
+              </Label>
+              <select
+                id="transcription-language"
+                value={normalizeTranscriptionLanguage(transcriptionLanguage)}
+                onChange={(e) => onTranscriptionLanguageChange?.(e.target.value)}
+                disabled={!onTranscriptionLanguageChange}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                {TRANSCRIPTION_LANGUAGE_OPTIONS.map((option) => (
+                  <option key={option.code} value={option.code}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Auto defers to the <code>WHISPER_LANGUAGE</code> server setting (auto-detect when unset). Any explicit
+              choice here overrides it. English-only Whisper models always transcribe English, which covers any model
+              ending in <code>.en</code> including the default <code>tiny.en</code>. Set <code>WHISPER_LOCAL_MODEL</code>{" "}
+              to a multilingual model such as <code>base</code> or <code>small</code> to use another language.
+            </p>
           </div>
         </div>
 

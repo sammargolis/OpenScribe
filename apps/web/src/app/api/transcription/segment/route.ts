@@ -1,8 +1,13 @@
 import type { NextRequest } from "next/server"
 import { toPipelineError } from "@pipeline-errors"
-import { parseWavHeader, resolveTranscriptionProvider, transcribeWithResolvedProvider } from "@transcription"
+import { parseWavHeader, resolveTranscriptionProvider } from "@transcription"
 import { transcriptionSessionStore } from "@transcript-assembly"
 import { writeAuditEntry } from "@storage/audit-log"
+import {
+  InvalidTranscriptionLanguageError,
+  resolveRequestTranscriptionLanguage,
+  transcribeWithLanguage,
+} from "@/lib/transcription-language"
 
 export const runtime = "nodejs"
 
@@ -108,10 +113,25 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    let languageOverride: string | undefined
+    try {
+      languageOverride = resolveRequestTranscriptionLanguage(sessionId, formData.get("language"))
+    } catch (error) {
+      if (error instanceof InvalidTranscriptionLanguageError) {
+        return jsonError(400, "validation_error", error.message, false)
+      }
+      throw error
+    }
+
     try {
       const resolvedProvider = resolveTranscriptionProvider()
       const startedAtMs = Date.now()
-      const transcript = await transcribeWithResolvedProvider(Buffer.from(arrayBuffer), `segment-${seqNo}.wav`, resolvedProvider)
+      const transcript = await transcribeWithLanguage(
+        Buffer.from(arrayBuffer),
+        `segment-${seqNo}.wav`,
+        resolvedProvider,
+        languageOverride,
+      )
       const latencyMs = Date.now() - startedAtMs
       transcriptionSessionStore.addSegment(sessionId, {
         seqNo,
@@ -133,6 +153,7 @@ export async function POST(req: NextRequest) {
           transcription_provider: resolvedProvider.provider,
           transcription_model: resolvedProvider.model,
           transcription_latency_ms: latencyMs,
+          transcription_language: languageOverride || "auto",
         },
       })
 
