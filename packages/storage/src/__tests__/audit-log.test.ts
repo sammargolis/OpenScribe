@@ -35,9 +35,11 @@ global.localStorage = {
   key: () => null,
 } as Storage
 
-// Mock crypto
+// Mock crypto.
+// Node exposes globalThis.crypto as a getter-only accessor, so a plain
+// assignment throws. defineProperty replaces the accessor with a value.
 let uuidCounter = 0
-global.crypto = {
+const cryptoMock = {
   randomUUID: () => `test-uuid-${++uuidCounter}`,
   subtle: {
     encrypt: async (algorithm: any, key: any, data: any) => {
@@ -51,6 +53,12 @@ global.crypto = {
     importKey: async () => ({} as CryptoKey),
   } as any,
 } as Crypto
+
+Object.defineProperty(globalThis, "crypto", {
+  value: cryptoMock,
+  configurable: true,
+  writable: true,
+})
 
 test("Audit Log Tests", async (t) => {
   t.beforeEach(() => {

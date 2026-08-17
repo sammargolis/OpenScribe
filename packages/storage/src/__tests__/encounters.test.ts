@@ -28,15 +28,19 @@ global.localStorage = {
   length: Object.keys(mockStorage).length,
 } as Storage
 
-// Mock crypto.randomUUID for testing
-if (!global.crypto) {
-  global.crypto = {} as Crypto
-}
-if (!global.crypto.randomUUID) {
-  let counter = 0
-  // @ts-ignore - Mock for testing
-  global.crypto.randomUUID = () => `test-uuid-${++counter}`
-}
+// Mock crypto.randomUUID for testing.
+// globalThis.crypto is a getter-only accessor in Node, so replace the whole
+// property with defineProperty rather than assigning to it.
+let uuidCounter = 0
+Object.defineProperty(globalThis, "crypto", {
+  value: {
+    ...(globalThis.crypto ?? {}),
+    subtle: globalThis.crypto?.subtle,
+    randomUUID: () => `test-uuid-${++uuidCounter}`,
+  } as Crypto,
+  configurable: true,
+  writable: true,
+})
 
 // Mock secure storage for testing
 // Note: In real app this would use AES-GCM encryption
