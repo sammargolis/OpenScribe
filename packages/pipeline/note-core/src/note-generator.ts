@@ -1,4 +1,4 @@
-import { runLLMRequest, prompts } from "../../../llm/src/index"
+import { generateNoteCompletion, prompts } from "../../../llm/src/index"
 import { toPipelineStageError } from "../../shared/src/error"
 import { 
   extractMarkdownFromResponse, 
@@ -60,15 +60,21 @@ export async function createClinicalNoteText(params: ClinicalNoteRequest): Promi
   try {
     debugLog("🤖 Calling LLM to generate markdown clinical note...")
     debugLog(`📌 Using prompt version: ${prompts.clinicalNote.currentVersion.PROMPT_VERSION}`)
-    debugLog(`🤖 Model: ${prompts.clinicalNote.currentVersion.MODEL_OPTIMIZED_FOR}`)
-    
-    const text = await runLLMRequest({
+    debugLog(`🤖 Requested model: ${prompts.clinicalNote.currentVersion.MODEL_OPTIMIZED_FOR}`)
+
+    // Provider/model come from the NOTE_MODEL_* env config, which defaults to
+    // the Anthropic path with the prompt version's model. Direct text
+    // generation - no JSON schema.
+    const completion = await generateNoteCompletion({
       system: systemPrompt,
       prompt: userPrompt,
       model: prompts.clinicalNote.currentVersion.MODEL_OPTIMIZED_FOR,
       apiKey,
-      // No JSON schema - direct text generation
     })
+
+    debugLog(`✅ Note model provider: ${completion.provider} (model: ${completion.model})`)
+
+    const text = completion.text
 
     // Extract markdown from response (handles code fences)
     const cleanedMarkdown = extractMarkdownFromResponse(text)
