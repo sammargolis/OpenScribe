@@ -5,8 +5,19 @@ import { createClinicalNoteText } from "@note-core"
 import { getAnthropicApiKey } from "@storage/server-api-keys"
 import { writeAuditEntry } from "@storage/audit-log"
 
-export async function generateClinicalNote(params: ClinicalNoteRequest): Promise<string> {
+/**
+ * `template` carries the resolved markdown template. `templateId` is the
+ * human-readable selection ("default" | "soap" | "custom") and is used for
+ * audit metadata so we never write a whole markdown template into the log.
+ */
+export type GenerateClinicalNoteParams = ClinicalNoteRequest & {
+  templateId?: string
+}
+
+export async function generateClinicalNote(params: GenerateClinicalNoteParams): Promise<string> {
   const apiKey = getAnthropicApiKey()
+  const { templateId, ...request } = params
+  const auditTemplateId = templateId || (request.template ? "custom" : "default")
 
   try {
     // Audit log: note generation started
@@ -14,19 +25,19 @@ export async function generateClinicalNote(params: ClinicalNoteRequest): Promise
       event_type: "note.generation_started",
       success: true,
       metadata: {
-        template: params.template || "default",
+        template: auditTemplateId,
         transcript_length: params.transcript?.length || 0,
       },
     })
 
-    const result = await createClinicalNoteText({ ...params, apiKey })
+    const result = await createClinicalNoteText({ ...request, apiKey })
 
     // Audit log: note generated successfully
     await writeAuditEntry({
       event_type: "note.generated",
       success: true,
       metadata: {
-        template: params.template || "default",
+        template: auditTemplateId,
         note_length: result.length,
       },
     })
@@ -39,7 +50,7 @@ export async function generateClinicalNote(params: ClinicalNoteRequest): Promise
       success: false,
       error_message: error instanceof Error ? error.message : String(error),
       metadata: {
-        template: params.template || "default",
+        template: auditTemplateId,
       },
     })
 

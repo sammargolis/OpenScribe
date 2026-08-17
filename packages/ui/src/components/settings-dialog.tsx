@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { X } from "lucide-react"
 import { Button } from "@ui/lib/ui/button"
 import { Label } from "@ui/lib/ui/label"
-import type { NoteLength, ProcessingMode } from "@storage/preferences"
+import type { NoteLength, ProcessingMode, NoteTemplateId } from "@storage/preferences"
 import { getAuditRetentionDays, setAuditRetentionDays, purgeAllAuditLogs } from "@storage/audit-log"
 import { AuditLogViewer } from "./audit-log-viewer"
 
@@ -28,6 +28,10 @@ interface SettingsDialogProps {
   lastMicReadinessMetrics?: { rms: number; peak: number } | null
   lastFailureCode?: string
   onRunMicrophoneCheck: () => Promise<void>
+  noteTemplateId?: NoteTemplateId
+  onNoteTemplateIdChange?: (templateId: NoteTemplateId) => void
+  customNoteTemplate?: string
+  onCustomNoteTemplateChange?: (template: string) => void
 }
 
 export function SettingsDialog({
@@ -50,6 +54,10 @@ export function SettingsDialog({
   lastMicReadinessMetrics,
   lastFailureCode,
   onRunMicrophoneCheck,
+  noteTemplateId = "default",
+  onNoteTemplateIdChange,
+  customNoteTemplate = "",
+  onCustomNoteTemplateChange,
 }: SettingsDialogProps) {
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
@@ -331,6 +339,78 @@ export function SettingsDialog({
                 Purge All Logs
               </Button>
             </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-border" />
+
+          {/* Note Template */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium text-foreground">Note Template</Label>
+            <p className="text-sm text-muted-foreground">
+              Choose the markdown structure used when generating new notes.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => onNoteTemplateIdChange?.("default")}
+                className={`flex-1 rounded-lg border-2 p-4 text-left transition-all ${
+                  noteTemplateId === "default"
+                    ? "border-foreground bg-accent"
+                    : "border-border hover:border-muted-foreground"
+                }`}
+              >
+                <div className="font-medium text-foreground">Default</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  History and Physical structure
+                </div>
+              </button>
+              <button
+                onClick={() => onNoteTemplateIdChange?.("soap")}
+                className={`flex-1 rounded-lg border-2 p-4 text-left transition-all ${
+                  noteTemplateId === "soap"
+                    ? "border-foreground bg-accent"
+                    : "border-border hover:border-muted-foreground"
+                }`}
+              >
+                <div className="font-medium text-foreground">SOAP</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Subjective / Objective / Assessment / Plan
+                </div>
+              </button>
+              <button
+                onClick={() => onNoteTemplateIdChange?.("custom")}
+                className={`flex-1 rounded-lg border-2 p-4 text-left transition-all ${
+                  noteTemplateId === "custom"
+                    ? "border-foreground bg-accent"
+                    : "border-border hover:border-muted-foreground"
+                }`}
+              >
+                <div className="font-medium text-foreground">Custom</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Your own markdown template
+                </div>
+              </button>
+            </div>
+            {noteTemplateId === "custom" && (
+              <div className="space-y-2">
+                <Label htmlFor="custom-note-template" className="text-sm font-medium text-foreground">
+                  Custom Markdown Template
+                </Label>
+                <textarea
+                  id="custom-note-template"
+                  value={customNoteTemplate}
+                  onChange={(e) => onCustomNoteTemplateChange?.(e.target.value)}
+                  rows={12}
+                  placeholder={"# My Note\n\n## Chief Complaint\n\n## Assessment & Plan\n"}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs"
+                  spellCheck={false}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use <code>#</code> for the note title, <code>##</code> for sections, and <code>###</code> for
+                  subsections. Empty or heading-less templates fall back to the default template.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

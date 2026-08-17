@@ -15,6 +15,7 @@ import { useAudioRecorder, type RecordedSegment, warmupMicrophonePermission, war
 import { useSegmentUpload, type UploadError } from "@transcription";
 import { WorkflowErrorDisplay } from "./workflow-error-display"
 import { generateClinicalNote } from "@/app/actions"
+import { resolveTemplate } from "@llm/prompts/clinical-note/templates"
 import {
   getPreferences,
   setPreferences,
@@ -23,6 +24,7 @@ import {
   setApiKeys,
   type NoteLength,
   type ProcessingMode,
+  type NoteTemplateId,
   debugLog,
   debugLogPHI,
   debugError,
@@ -114,6 +116,16 @@ function templateForVisitReason(visitReason?: string): "default" | "soap" {
   return "default"
 }
 
+/**
+ * Decide which template id to use for an encounter.
+ * An explicit non-default user selection always wins; "default" (the preference
+ * default) keeps the legacy visit-type mapping so existing flows are unchanged.
+ */
+function effectiveTemplateId(preferredTemplateId: NoteTemplateId | undefined, visitReason?: string): NoteTemplateId {
+  if (preferredTemplateId && preferredTemplateId !== "default") return preferredTemplateId
+  return templateForVisitReason(visitReason)
+}
+
 function resolveApiBaseUrl(): string {
   if (typeof window === "undefined") return ""
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim()
@@ -170,6 +182,8 @@ function HomePageContent() {
   const [lastMicReadiness, setLastMicReadiness] = useState<MicReadinessResult | null>(null)
   const [lastFailureCode, setLastFailureCode] = useState("")
   const [noteLength, setNoteLengthState] = useState<NoteLength>("long")
+  const [noteTemplateId, setNoteTemplateIdState] = useState<NoteTemplateId>("default")
+  const [customNoteTemplate, setCustomNoteTemplateState] = useState("")
   const [processingMode, setProcessingModeState] = useState<ProcessingMode>("mixed")
   const [localBackendAvailable, setLocalBackendAvailable] = useState(false)
   const [localDurationMs, setLocalDurationMs] = useState(0)
@@ -188,6 +202,8 @@ function HomePageContent() {
   useEffect(() => {
     const prefs = getPreferences()
     setNoteLengthState(prefs.noteLength)
+    setNoteTemplateIdState(prefs.noteTemplateId || "default")
+    setCustomNoteTemplateState(prefs.customNoteTemplate || "")
     setProcessingModeState(prefs.processingMode)
     setPreferredInputDeviceId(prefs.preferredInputDeviceId || "")
 
@@ -355,6 +371,16 @@ function HomePageContent() {
   const handleNoteLengthChange = (length: NoteLength) => {
     setNoteLengthState(length)
     setPreferences({ noteLength: length })
+  }
+
+  const handleNoteTemplateIdChange = (templateId: NoteTemplateId) => {
+    setNoteTemplateIdState(templateId)
+    void setPreferences({ noteTemplateId: templateId })
+  }
+
+  const handleCustomNoteTemplateChange = (template: string) => {
+    setCustomNoteTemplateState(template)
+    void setPreferences({ customNoteTemplate: template })
   }
 
   const refreshMicPermissionStatus = useCallback(async () => {
@@ -767,20 +793,25 @@ function HomePageContent() {
   // Stable refs to avoid EventSource recreation
   const encountersRef = useRef(encounters)
   const noteLengthRef = useRef(noteLength)
+  const noteTemplateIdRef = useRef(noteTemplateId)
+  const customNoteTemplateRef = useRef(customNoteTemplate)
   const refreshRef = useRef(refresh)
-  
+
   useEffect(() => {
     encountersRef.current = encounters
     noteLengthRef.current = noteLength
+    noteTemplateIdRef.current = noteTemplateId
+    customNoteTemplateRef.current = customNoteTemplate
     refreshRef.current = refresh
-  }, [encounters, noteLength, refresh])
+  }, [encounters, noteLength, noteTemplateId, customNoteTemplate, refresh])
 
   const processEncounterForNoteGeneration = useCallback(
     async (encounterId: string, transcript: string) => {
       const enc = encountersRef.current.find((e: Encounter) => e.id === encounterId)
       const patientName = enc?.patient_name || ""
       const visitReason = enc?.visit_reason || ""
-      const template = templateForVisitReason(visitReason)
+      const templateId = effectiveTemplateId(noteTemplateIdRef.current, visitReason)
+      const template = resolveTemplate({ templateId, customTemplate: customNoteTemplateRef.current })
 
       debugLog("\n" + "=".repeat(80))
       debugLog("GENERATING CLINICAL NOTE")
@@ -789,6 +820,7 @@ function HomePageContent() {
       debugLogPHI(`Patient: ${patientName || "Unknown"}`)
       debugLogPHI(`Visit Reason: ${visitReason || "Not provided"}`)
       debugLog(`Note Length: ${noteLengthRef.current}`)
+      debugLog(`Note Template: ${templateId}`)
       debugLog(`Transcript length: ${transcript.length} characters`)
       debugLog("=".repeat(80) + "\n")
 
@@ -805,6 +837,7 @@ function HomePageContent() {
           visit_reason: visitReason,
           noteLength: noteLengthRef.current,
           template,
+          templateId,
         })
         await updateEncounterRef.current(encounterId, {
           note_text: note,
@@ -1593,6 +1626,10 @@ function HomePageContent() {
         onRunMicrophoneCheck={async () => {
           await runMicReadinessCheck(true)
         }}
+        noteTemplateId={noteTemplateId}
+        onNoteTemplateIdChange={handleNoteTemplateIdChange}
+        customNoteTemplate={customNoteTemplate}
+        onCustomNoteTemplateChange={handleCustomNoteTemplateChange}
       />
       {showMixedKeyPrompt && processingMode === "mixed" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
