@@ -7,11 +7,21 @@ import { writeAuditEntry } from "./audit-log"
 
 export type NoteLength = "short" | "long"
 export type ProcessingMode = "mixed" | "local"
+export type NoteTemplateId = "default" | "soap" | "custom"
+export type OpenClawMode = "off" | "suggest_only" | "tiny_actions_only"
 
 export interface UserPreferences {
   noteLength: NoteLength
   processingMode: ProcessingMode
   preferredInputDeviceId?: string
+  /** Whisper transcription language. "auto" defers to backend auto-detect. */
+  transcriptionLanguage?: string
+  /** Which clinical-note template to use for generation. */
+  noteTemplateId?: NoteTemplateId
+  /** User-authored markdown template, used when noteTemplateId === "custom". */
+  customNoteTemplate?: string
+  /** Experimental OpenClaw note-to-actions POC mode. */
+  openClawMode?: OpenClawMode
 }
 
 const PREFERENCES_KEY = "openscribe_preferences"
@@ -32,6 +42,10 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   noteLength: "long",
   processingMode: "mixed",
   preferredInputDeviceId: "",
+  transcriptionLanguage: "auto",
+  noteTemplateId: "default",
+  customNoteTemplate: "",
+  openClawMode: "off",
 }
 
 export function getPreferences(): UserPreferences {
