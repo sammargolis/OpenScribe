@@ -32,6 +32,40 @@ import {
   debugWarn,
   initializeAuditLog,
 } from "@storage"
+// OpenClaw experimental POC (issue #35). Separate imports so the POC can be
+// removed in one pass. Nothing here may affect the note workflow.
+import { ClawReportPanel } from "@ui"
+import { runOpenClaw, createBrowserClawStore, type ClawReport, type OpenClawMode } from "@openclaw"
+import { writeAuditEntry } from "@storage/audit-log"
+import { planOpenClawActions } from "@/app/openclaw-actions"
+
+/**
+ * Fire-and-forget OpenClaw run. Reads the mode from preferences, so "off"
+ * (the default) does nothing at all. Every failure path is swallowed here: the
+ * clinical note has already been saved before this is called.
+ */
+async function runOpenClawForNote(
+  encounterId: string,
+  noteText: string,
+  setReport: (report: ClawReport | null) => void,
+): Promise<void> {
+  try {
+    const mode: OpenClawMode = getPreferences().openClawMode ?? "off"
+    if (mode === "off") return
+
+    const report = await runOpenClaw({
+      note: noteText,
+      mode,
+      encounterId,
+      planner: planOpenClawActions,
+      store: createBrowserClawStore(),
+      audit: writeAuditEntry,
+    })
+    setReport(report)
+  } catch (error) {
+    debugWarn("OpenClaw POC run failed; clinical note is unaffected", error)
+  }
+}
 
 type ViewState =
   | { type: "idle" }
@@ -188,6 +222,9 @@ function HomePageContent() {
   const [transcriptionLanguage, setTranscriptionLanguageState] = useState<string>(AUTO_TRANSCRIPTION_LANGUAGE)
   const transcriptionLanguageRef = useRef<string>(AUTO_TRANSCRIPTION_LANGUAGE)
   const [processingMode, setProcessingModeState] = useState<ProcessingMode>("mixed")
+  // OpenClaw experimental POC (issue #35)
+  const [openClawMode, setOpenClawModeState] = useState<OpenClawMode>("off")
+  const [clawReport, setClawReport] = useState<ClawReport | null>(null)
   const [localBackendAvailable, setLocalBackendAvailable] = useState(false)
   const [localDurationMs, setLocalDurationMs] = useState(0)
   const [localPaused, setLocalPaused] = useState(false)
@@ -212,6 +249,7 @@ function HomePageContent() {
     const storedLanguage = normalizeTranscriptionLanguage(prefs.transcriptionLanguage)
     setTranscriptionLanguageState(storedLanguage)
     transcriptionLanguageRef.current = storedLanguage
+    setOpenClawModeState(prefs.openClawMode ?? "off")
 
     // Initialize audit logging system (cleanup old entries, setup periodic cleanup)
     void initializeAuditLog()
@@ -418,6 +456,13 @@ function HomePageContent() {
       debugWarn("Failed to register transcription language", error)
     }
   }, [])
+
+  // OpenClaw experimental POC (issue #35)
+  const handleOpenClawModeChange = (mode: OpenClawMode) => {
+    setOpenClawModeState(mode)
+    void setPreferences({ openClawMode: mode })
+    if (mode === "off") setClawReport(null)
+  }
 
   const refreshMicPermissionStatus = useCallback(async () => {
     try {
@@ -910,6 +955,9 @@ function HomePageContent() {
         debugLog("ENCOUNTER PROCESSING COMPLETE")
         debugLog("=".repeat(80) + "\n")
         setView({ type: "viewing", encounterId })
+        // OpenClaw experimental POC (issue #35): fire-and-forget, after the note
+        // is saved. No await, no throw path back into note generation.
+        void runOpenClawForNote(encounterId, note, setClawReport)
       } catch (err) {
         debugError("❌ Note generation failed:", err)
         setWorkflowError(
@@ -1640,7 +1688,17 @@ function HomePageContent() {
       }
       case "viewing":
         return selectedEncounter ? (
-          <NoteEditor encounter={selectedEncounter} onSave={handleSaveNote} />
+          <div className="flex h-full min-h-0 flex-col">
+            <div className="min-h-0 flex-1">
+              <NoteEditor encounter={selectedEncounter} onSave={handleSaveNote} />
+            </div>
+            {/* OpenClaw experimental POC (issue #35) */}
+            {clawReport && clawReport.encounterId === selectedEncounter.id && (
+              <div className="max-h-72 shrink-0 overflow-y-auto border-t border-border bg-background p-4">
+                <ClawReportPanel report={clawReport} onDismiss={() => setClawReport(null)} />
+              </div>
+            )}
+          </div>
         ) : (
           <IdleView onStartNew={handleStartNew} />
         )
@@ -1696,6 +1754,8 @@ function HomePageContent() {
         onCustomNoteTemplateChange={handleCustomNoteTemplateChange}
         transcriptionLanguage={transcriptionLanguage}
         onTranscriptionLanguageChange={handleTranscriptionLanguageChange}
+        openClawMode={openClawMode}
+        onOpenClawModeChange={handleOpenClawModeChange}
       />
       {showMixedKeyPrompt && processingMode === "mixed" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">

@@ -19,6 +19,7 @@
     "../packages/pipeline/note-core/src/**/*.ts",
     "../packages/pipeline/shared/src/**/*.ts",
     "../packages/pipeline/medgemma-scribe/src/**/*.ts",
+    "../packages/openclaw/src/**/*.ts",
     "../packages/llm/src/**/*.ts",
     "../packages/llm-medgemma/src/**/*.ts",
     "../packages/storage/src/**/*.ts",
