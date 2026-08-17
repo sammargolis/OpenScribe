@@ -161,6 +161,75 @@ function effectiveTemplateId(preferredTemplateId: NoteTemplateId | undefined, vi
   return templateForVisitReason(visitReason)
 }
 
+/**
+ * Install-level whisper failures. These are not transient, so telling the user
+ * to "retry in a few seconds" is actively misleading -- the sidecar is missing,
+ * not executable, quarantined by Gatekeeper, or built for the wrong arch, and
+ * nothing improves until they act. The shell reports `retryable: false` for
+ * these; see docs/WHISPER-TROUBLESHOOTING.md.
+ */
+const WHISPER_INSTALL_FAILURE_CODES = new Set([
+  "WHISPER_BACKEND_MISSING",
+  "WHISPER_BACKEND_NOT_EXECUTABLE",
+  "WHISPER_BACKEND_QUARANTINED",
+  "WHISPER_BACKEND_ARCH_MISMATCH",
+])
+
+interface RuntimeReadinessPayload {
+  code?: string
+  errorCode?: string
+  userMessage?: string
+  error?: string
+  retryable?: boolean
+  details?: {
+    reason?: string
+    retryable?: boolean
+    whisperStatus?: { reason?: string; retryable?: boolean }
+  }
+}
+
+/**
+ * Turn a runtime readiness failure into a code, a user-facing message, and
+ * whether retrying could plausibly help.
+ *
+ * The shell's own userMessage is preferred when present -- it is the most
+ * specific thing available (it names the failing path or the xattr command).
+ * The explicit cases below only cover codes where the shell has historically
+ * sent a bare code with no message.
+ */
+function describeRuntimeFailure(
+  payload: RuntimeReadinessPayload | null | undefined,
+  fallbackCode: string,
+  fallbackMessage: string,
+): { code: string; message: string; retryable: boolean } {
+  const code = payload?.code || payload?.errorCode || fallbackCode
+  const reason =
+    payload?.details?.reason || payload?.details?.whisperStatus?.reason
+  const isInstallFailure =
+    WHISPER_INSTALL_FAILURE_CODES.has(code) ||
+    (reason ? WHISPER_INSTALL_FAILURE_CODES.has(reason) : false)
+
+  const declaredRetryable =
+    payload?.retryable ??
+    payload?.details?.retryable ??
+    payload?.details?.whisperStatus?.retryable
+
+  let message = payload?.userMessage || payload?.error || fallbackMessage
+  if (!payload?.userMessage) {
+    if (code === "STARTING" || reason === "STARTING") {
+      message = "Whisper is still initializing in the background. Retry in a few seconds."
+    } else if (code === "MODEL_DOWNLOAD_FAILED" || reason === "MODEL_DOWNLOAD_FAILED") {
+      message = "Whisper model download failed. Check your network connection and retry setup."
+    }
+  }
+
+  return {
+    code,
+    message,
+    retryable: declaredRetryable ?? !isInstallFailure,
+  }
+}
+
 function resolveApiBaseUrl(): string {
   if (typeof window === "undefined") return ""
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim()
@@ -204,9 +273,11 @@ function HomePageContent() {
   const [showMixedRuntimePrompt, setShowMixedRuntimePrompt] = useState(false)
   const [mixedRuntimePromptMessage, setMixedRuntimePromptMessage] = useState("")
   const [mixedRuntimePromptCode, setMixedRuntimePromptCode] = useState("")
+  const [mixedRuntimePromptRetryable, setMixedRuntimePromptRetryable] = useState(true)
   const [showLocalRuntimePrompt, setShowLocalRuntimePrompt] = useState(false)
   const [localRuntimePromptMessage, setLocalRuntimePromptMessage] = useState("")
   const [localRuntimePromptCode, setLocalRuntimePromptCode] = useState("")
+  const [localRuntimePromptRetryable, setLocalRuntimePromptRetryable] = useState(true)
   const [anthropicApiKeyInput, setAnthropicApiKeyInput] = useState("")
   const [hasAnthropicApiKey, setHasAnthropicApiKey] = useState(false)
   const [mixedAuthStatusLoaded, setMixedAuthStatusLoaded] = useState(false)
@@ -549,17 +620,14 @@ function HomePageContent() {
       }
 
       if (showPromptOnFailure) {
-        const code = result?.code || result?.errorCode || "MIXED_RUNTIME_NOT_READY"
-        const reason = (result as { details?: { reason?: string; whisperStatus?: { reason?: string } } })?.details?.reason
-          || (result as { details?: { whisperStatus?: { reason?: string } } })?.details?.whisperStatus?.reason
-        let message = result?.userMessage || result?.error || "Mixed runtime is not ready."
-        if (code === "STARTING" || reason === "STARTING") {
-          message = "Whisper is still initializing in the background. Retry in a few seconds."
-        } else if (code === "MODEL_DOWNLOAD_FAILED" || reason === "MODEL_DOWNLOAD_FAILED") {
-          message = "Whisper model download failed. Check your network connection and retry setup."
-        }
+        const { code, message, retryable } = describeRuntimeFailure(
+          result as RuntimeReadinessPayload,
+          "MIXED_RUNTIME_NOT_READY",
+          "Mixed runtime is not ready.",
+        )
         setMixedRuntimePromptCode(code)
         setMixedRuntimePromptMessage(message)
+        setMixedRuntimePromptRetryable(retryable)
         setShowMixedRuntimePrompt(true)
       }
       return { ok: false, payload: result }
@@ -595,17 +663,14 @@ function HomePageContent() {
         setLocalRuntimePromptCode("")
         return { ok: true, payload: result }
       }
-      const code = result?.code || result?.errorCode || "LOCAL_RUNTIME_NOT_READY"
-      const reason = (result as { details?: { reason?: string; whisperStatus?: { reason?: string } } })?.details?.reason
-        || (result as { details?: { whisperStatus?: { reason?: string } } })?.details?.whisperStatus?.reason
-      let message = result?.userMessage || result?.error || "Local runtime is not ready."
-      if (code === "STARTING" || reason === "STARTING") {
-        message = "Whisper is still initializing in the background. Retry in a few seconds."
-      } else if (code === "MODEL_DOWNLOAD_FAILED" || reason === "MODEL_DOWNLOAD_FAILED") {
-        message = "Whisper model download failed. Check your network connection and retry setup."
-      }
+      const { code, message, retryable } = describeRuntimeFailure(
+        result as RuntimeReadinessPayload,
+        "LOCAL_RUNTIME_NOT_READY",
+        "Local runtime is not ready.",
+      )
       setLocalRuntimePromptCode(code)
       setLocalRuntimePromptMessage(message)
+      setLocalRuntimePromptRetryable(retryable)
       setShowLocalRuntimePrompt(true)
       return { ok: false, payload: result }
     } catch (error) {
@@ -1804,19 +1869,26 @@ function HomePageContent() {
             {mixedRuntimePromptCode && (
               <p className="mt-2 text-xs text-muted-foreground">Code: {mixedRuntimePromptCode}</p>
             )}
+            {!mixedRuntimePromptRetryable && (
+              <p className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-500">
+                This needs a fix, not a retry. See docs/WHISPER-TROUBLESHOOTING.md.
+              </p>
+            )}
             <div className="mt-5 flex gap-3">
-              <button
-                type="button"
-                className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
-                onClick={async () => {
-                  const readiness = await ensureMixedRuntimeReady(true)
-                  if (readiness.ok) {
-                    setShowMixedRuntimePrompt(false)
-                  }
-                }}
-              >
-                Retry
-              </button>
+              {mixedRuntimePromptRetryable && (
+                <button
+                  type="button"
+                  className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+                  onClick={async () => {
+                    const readiness = await ensureMixedRuntimeReady(true)
+                    if (readiness.ok) {
+                      setShowMixedRuntimePrompt(false)
+                    }
+                  }}
+                >
+                  Retry
+                </button>
+              )}
               <button
                 type="button"
                 className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90"
@@ -1840,6 +1912,11 @@ function HomePageContent() {
             </p>
             {localRuntimePromptCode && (
               <p className="mt-2 text-xs text-muted-foreground">Code: {localRuntimePromptCode}</p>
+            )}
+            {!localRuntimePromptRetryable && (
+              <p className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-500">
+                This needs a fix, not a retry. See docs/WHISPER-TROUBLESHOOTING.md.
+              </p>
             )}
             <div className="mt-5 flex gap-3">
               <button
