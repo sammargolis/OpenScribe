@@ -10,6 +10,7 @@ import {
 } from "@pipeline-errors"
 import type { Encounter } from "@storage/types"
 import { useEncounters, EncounterList, IdleView, NewEncounterForm, RecordingView, ProcessingView, ErrorBoundary, PermissionsDialog, SettingsDialog, SettingsBar, ModelIndicator, LocalSetupWizard, useHttpsWarning, useOnlineStatus, resolveCapabilityStatus, OfflineBlockedDialog } from "@ui"
+import { AUTO_TRANSCRIPTION_LANGUAGE, normalizeTranscriptionLanguage } from "@ui/lib/transcription-languages"
 import { NoteEditor } from "@note-rendering"
 import { useAudioRecorder, type RecordedSegment, warmupMicrophonePermission, warmupSystemAudioPermission } from "@audio"
 import { useSegmentUpload, type UploadError } from "@transcription";
@@ -184,6 +185,8 @@ function HomePageContent() {
   const [noteLength, setNoteLengthState] = useState<NoteLength>("long")
   const [noteTemplateId, setNoteTemplateIdState] = useState<NoteTemplateId>("default")
   const [customNoteTemplate, setCustomNoteTemplateState] = useState("")
+  const [transcriptionLanguage, setTranscriptionLanguageState] = useState<string>(AUTO_TRANSCRIPTION_LANGUAGE)
+  const transcriptionLanguageRef = useRef<string>(AUTO_TRANSCRIPTION_LANGUAGE)
   const [processingMode, setProcessingModeState] = useState<ProcessingMode>("mixed")
   const [localBackendAvailable, setLocalBackendAvailable] = useState(false)
   const [localDurationMs, setLocalDurationMs] = useState(0)
@@ -206,6 +209,9 @@ function HomePageContent() {
     setCustomNoteTemplateState(prefs.customNoteTemplate || "")
     setProcessingModeState(prefs.processingMode)
     setPreferredInputDeviceId(prefs.preferredInputDeviceId || "")
+    const storedLanguage = normalizeTranscriptionLanguage(prefs.transcriptionLanguage)
+    setTranscriptionLanguageState(storedLanguage)
+    transcriptionLanguageRef.current = storedLanguage
 
     // Initialize audit logging system (cleanup old entries, setup periodic cleanup)
     void initializeAuditLog()
@@ -382,6 +388,36 @@ function HomePageContent() {
     setCustomNoteTemplateState(template)
     void setPreferences({ customNoteTemplate: template })
   }
+  // Transcription language: normalized against the shared allowlist before it is
+  // persisted or sent to the API, so an unsupported value can never reach Whisper.
+  const handleTranscriptionLanguageChange = useCallback((value: string) => {
+    const normalized = normalizeTranscriptionLanguage(value)
+    setTranscriptionLanguageState(normalized)
+    transcriptionLanguageRef.current = normalized
+    void setPreferences({ transcriptionLanguage: normalized }).catch((error) => {
+      debugWarn("Failed to persist transcription language", error)
+    })
+  }, [])
+
+  /** Register the selected language for the capture session so segment uploads use it too. */
+  const registerSessionTranscriptionLanguage = useCallback(async (activeSessionId: string) => {
+    try {
+      const baseUrl = apiBaseUrlRef.current
+      const url = baseUrl
+        ? `${baseUrl.replace(/\/+$/, "")}/api/transcription/language`
+        : "/api/transcription/language"
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: activeSessionId, language: transcriptionLanguageRef.current }),
+      })
+      if (!response.ok) {
+        debugWarn("Failed to register transcription language", response.status)
+      }
+    } catch (error) {
+      debugWarn("Failed to register transcription language", error)
+    }
+  }, [])
 
   const refreshMicPermissionStatus = useCallback(async () => {
     try {
@@ -1095,6 +1131,7 @@ function HomePageContent() {
       const session = crypto.randomUUID()
       if (!useLocalBackend) {
         startNewSession(session)
+        void registerSessionTranscriptionLanguage(session)
       }
 
       const encounter = await addEncounter({
@@ -1151,6 +1188,7 @@ function HomePageContent() {
       const formData = new FormData()
       formData.append("session_id", activeSessionId)
       formData.append("file", blob, `${activeSessionId}-full.wav`)
+      formData.append("language", transcriptionLanguageRef.current)
       const baseUrl = apiBaseUrlRef.current
       const url = baseUrl
         ? `${baseUrl.replace(/\/+$/, "")}/api/transcription/final`
@@ -1656,6 +1694,8 @@ function HomePageContent() {
         onNoteTemplateIdChange={handleNoteTemplateIdChange}
         customNoteTemplate={customNoteTemplate}
         onCustomNoteTemplateChange={handleCustomNoteTemplateChange}
+        transcriptionLanguage={transcriptionLanguage}
+        onTranscriptionLanguageChange={handleTranscriptionLanguageChange}
       />
       {showMixedKeyPrompt && processingMode === "mixed" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">

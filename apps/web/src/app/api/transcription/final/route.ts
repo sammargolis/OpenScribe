@@ -1,13 +1,14 @@
 import type { NextRequest } from "next/server"
 import { toPipelineError } from "@pipeline-errors"
-import {
-  isLikelySilentPcm16,
-  parseWavHeader,
-  resolveTranscriptionProvider,
-  transcribeWithResolvedProvider,
-} from "@transcription"
+import { isLikelySilentPcm16, parseWavHeader, resolveTranscriptionProvider } from "@transcription"
 import { transcriptionSessionStore } from "@transcript-assembly"
 import { writeAuditEntry } from "@storage/audit-log"
+import {
+  InvalidTranscriptionLanguageError,
+  forgetSessionTranscriptionLanguage,
+  resolveRequestTranscriptionLanguage,
+  transcribeWithLanguage,
+} from "@/lib/transcription-language"
 
 export const runtime = "nodejs"
 
@@ -37,6 +38,16 @@ export async function POST(req: NextRequest) {
 
     if (typeof sessionId !== "string" || !(file instanceof Blob)) {
       return jsonError(400, "validation_error", "Missing session_id or file", false)
+    }
+
+    let languageOverride: string | undefined
+    try {
+      languageOverride = resolveRequestTranscriptionLanguage(sessionId, formData.get("language"))
+    } catch (error) {
+      if (error instanceof InvalidTranscriptionLanguageError) {
+        return jsonError(400, "validation_error", error.message, false)
+      }
+      throw error
     }
 
     transcriptionSessionStore.setStatus(sessionId, "finalizing")
@@ -74,10 +85,11 @@ export async function POST(req: NextRequest) {
 
     try {
       const startedAtMs = Date.now()
-      const transcript = await transcribeWithResolvedProvider(
+      const transcript = await transcribeWithLanguage(
         Buffer.from(arrayBuffer),
         `${sessionId}-final.wav`,
         resolvedProvider,
+        languageOverride,
       )
       const latencyMs = Date.now() - startedAtMs
       if (isBlankTranscript(transcript)) {
@@ -99,6 +111,7 @@ export async function POST(req: NextRequest) {
         })
       }
       transcriptionSessionStore.setFinalTranscript(sessionId, transcript)
+      forgetSessionTranscriptionLanguage(sessionId)
 
       // Audit log: final transcription completed
       await writeAuditEntry({
@@ -111,6 +124,7 @@ export async function POST(req: NextRequest) {
           transcription_provider: resolvedProvider.provider,
           transcription_model: resolvedProvider.model,
           transcription_latency_ms: latencyMs,
+          transcription_language: languageOverride || "auto",
         },
       })
 

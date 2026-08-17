@@ -23,7 +23,8 @@
     "../packages/llm-medgemma/src/**/*.ts",
     "../packages/storage/src/**/*.ts",
     "../packages/ui/src/lib/capability-status.ts",
-    "../packages/ui/src/lib/__tests__/capability-status.test.ts"
+    "../packages/ui/src/lib/transcription-languages.ts",
+    "../packages/ui/src/lib/__tests__/**/*.ts"
   ],
   "exclude": [
     "node_modules",

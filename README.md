@@ -182,6 +182,7 @@ OpenScribe supports three workflows. **Mixed web mode is the default path.**
 - Default model `tiny.en` as well as all `.en`-models transcribes English only
 - Multilingual transcription works for both local and API-based models
 - Multilingual transcription is supported by setting `WHISPER_LANGUAGE` (see `.env.local.example` for details) and (for local use) switching to a non-`.en` Whisper model (e.g. `tiny`, `base`, `small`)
+- Users can also pick the language in the app: `Settings -> Transcription Language`. An explicit choice overrides `WHISPER_LANGUAGE`; leaving it on `Auto (default)` keeps the existing env/auto-detect behavior unchanged. [Precedence rules and details](./docs/TRANSCRIPTION-LANGUAGE.md)
 
 ### Local-only Desktop (optional)
 - Transcription: local Whisper backend in `local-only/openscribe-backend`
