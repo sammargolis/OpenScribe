@@ -162,13 +162,23 @@ export async function getAuditEntries(
       if (filter.success !== undefined) {
         filtered = filtered.filter((entry) => entry.success === filter.success)
       }
-      if (filter.limit && filter.limit > 0) {
-        filtered = filtered.slice(0, filter.limit)
-      }
     }
 
-    // Sort by timestamp descending (most recent first)
-    filtered.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    // Sort by timestamp descending (most recent first). Timestamps only have
+    // millisecond resolution, so entries written within the same millisecond are
+    // tie-broken by storage order: entries are appended, so a later index means
+    // a later write.
+    const storageOrder = new Map(filtered.map((entry, index) => [entry, index]))
+    filtered = [...filtered].sort((a, b) => {
+      const byTimestamp = b.timestamp.localeCompare(a.timestamp)
+      if (byTimestamp !== 0) return byTimestamp
+      return storageOrder.get(b)! - storageOrder.get(a)!
+    })
+
+    // Limit after sorting so a limit returns the most recent N, not the oldest N
+    if (filter?.limit && filter.limit > 0) {
+      filtered = filtered.slice(0, filter.limit)
+    }
 
     return filtered
   } catch (error) {
@@ -317,11 +327,17 @@ export async function purgeAllAuditLogs(): Promise<void> {
   debugLog("audit", "Purging all audit logs")
 
   try {
+    // Persist anything still queued first so the pre-purge count is accurate.
+    await flushAuditQueue()
+
     const allLogs = (await loadSecureItem<AuditLogEntry[]>(AUDIT_LOGS_KEY)) || []
     const count = allLogs.length
 
-    // Log the purge before deleting
-    await writeAuditEntry({
+    // Record the purge itself. This entry has to survive the purge: destroying
+    // audit records must itself be auditable, so it is written directly rather
+    // than left in the queue (a later flush would append it to logs that no
+    // longer exist).
+    const purgeEntry = await writeAuditEntry({
       event_type: "audit.purged",
       success: true,
       metadata: {
@@ -330,12 +346,14 @@ export async function purgeAllAuditLogs(): Promise<void> {
       },
     })
 
-    // Flush the purge entry
-    await flushAuditQueue()
+    auditQueue = auditQueue.filter((entry) => entry.id !== purgeEntry.id)
+    if (auditQueue.length === 0 && flushTimer) {
+      clearTimeout(flushTimer)
+      flushTimer = null
+    }
 
-    // Now clear all logs except the purge entry
-    const purgeEntry = auditQueue.length > 0 ? auditQueue : []
-    await saveSecureItem(AUDIT_LOGS_KEY, purgeEntry)
+    // Replace all logs with the purge record
+    await saveSecureItem(AUDIT_LOGS_KEY, [purgeEntry])
 
     debugLog("audit", `Purged ${count} audit entries`)
   } catch (error) {

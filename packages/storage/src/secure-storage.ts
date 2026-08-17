@@ -1,6 +1,5 @@
 const ENCODER = new TextEncoder()
 const DECODER = new TextDecoder()
-const KEY_ENV = (process.env.NEXT_PUBLIC_SECURE_STORAGE_KEY ?? "").trim()
 const CURRENT_VERSION = "v2"
 const LEGACY_VERSION = "v1"
 const PREFIX_BASE = "enc"
@@ -8,6 +7,25 @@ const WEB_FALLBACK_KEY_STORAGE = "openscribe_encryption_key_web"
 
 let keyPromise: Promise<CryptoKey> | null = null
 let electronKeyPromise: Promise<string | null> | null = null
+
+/**
+ * Read the configured env key. Read lazily (not at module load) so the value is
+ * always the current one; Next.js still inlines the NEXT_PUBLIC_ reference at
+ * build time because it substitutes the member expression wherever it appears.
+ */
+function getEnvKey(): string {
+  return (process.env.NEXT_PUBLIC_SECURE_STORAGE_KEY ?? "").trim()
+}
+
+/**
+ * Test-only: drop the cached CryptoKey and Electron device-key promises so the
+ * next call re-derives them. Needed because the derived key is memoized for the
+ * lifetime of the module. Not used by application code.
+ */
+export function resetSecureStorageKeyCacheForTests(): void {
+  keyPromise = null
+  electronKeyPromise = null
+}
 
 /**
  * Get or generate the encryption key for this device.
@@ -64,11 +82,12 @@ async function getOrGenerateDeviceKey(): Promise<string> {
   }
   
   // Fallback to environment variable (legacy browser mode)
-  if (KEY_ENV) {
-    if (base64ToBytes(KEY_ENV).byteLength !== 32) {
+  const envKey = getEnvKey()
+  if (envKey) {
+    if (base64ToBytes(envKey).byteLength !== 32) {
       throw new Error("NEXT_PUBLIC_SECURE_STORAGE_KEY must be a base64 encoded 256-bit key.")
     }
-    return KEY_ENV
+    return envKey
   }
 
   // Browser fallback for local-only/dev mode when env key is not configured.
