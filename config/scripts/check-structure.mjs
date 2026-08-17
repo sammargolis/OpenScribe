@@ -65,7 +65,20 @@ for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
   if (name.startsWith(".") && ![".gitignore"].includes(name)) {
     continue
   }
-  if (entry.isDirectory()) {
+  // Resolve symlinks before classifying. In a git worktree, node_modules is
+  // commonly a symlink to the main checkout's copy, and Dirent reports that as
+  // a file -- which made this check fail with "Unexpected top-level file:
+  // node_modules" for anyone developing in a worktree.
+  let isDirectory = entry.isDirectory()
+  if (entry.isSymbolicLink()) {
+    try {
+      isDirectory = fs.statSync(path.join(root, name)).isDirectory()
+    } catch {
+      // Broken symlink. Fall through and treat it as a file.
+    }
+  }
+
+  if (isDirectory) {
     if (!allowedRootDirs.has(name)) {
       errors.push(`Unexpected top-level directory: ${name}`)
     }
