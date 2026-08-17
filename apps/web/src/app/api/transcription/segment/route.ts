@@ -1,6 +1,11 @@
 import type { NextRequest } from "next/server"
 import { toPipelineError } from "@pipeline-errors"
-import { parseWavHeader, resolveTranscriptionProvider, transcribeWithResolvedProvider } from "@transcription"
+import {
+  isLikelySilentPcm16,
+  parseWavHeader,
+  resolveTranscriptionProvider,
+  transcribeWithResolvedProvider,
+} from "@transcription"
 import { transcriptionSessionStore } from "@transcript-assembly"
 import { writeAuditEntry } from "@storage/audit-log"
 
@@ -11,50 +16,6 @@ function jsonError(status: number, code: string, message: string, recoverable: b
     status,
     headers: { "Content-Type": "application/json" },
   })
-}
-
-function getWavDataChunk(buffer: ArrayBuffer): { offset: number; size: number } | null {
-  if (buffer.byteLength < 44) return null
-  const view = new DataView(buffer)
-  let offset = 12
-  while (offset + 8 <= buffer.byteLength) {
-    const chunkId = String.fromCharCode(
-      view.getUint8(offset),
-      view.getUint8(offset + 1),
-      view.getUint8(offset + 2),
-      view.getUint8(offset + 3),
-    )
-    const chunkSize = view.getUint32(offset + 4, true)
-    const chunkStart = offset + 8
-    if (chunkId === "data") {
-      return { offset: chunkStart, size: Math.min(chunkSize, buffer.byteLength - chunkStart) }
-    }
-    offset = chunkStart + chunkSize + (chunkSize % 2)
-  }
-  return null
-}
-
-function isLikelySilentPcm16(buffer: ArrayBuffer): boolean {
-  const data = getWavDataChunk(buffer)
-  if (!data || data.size < 2) return true
-  const view = new DataView(buffer, data.offset, data.size)
-  const sampleCount = Math.floor(data.size / 2)
-  if (sampleCount === 0) return true
-
-  let sumSquares = 0
-  let peak = 0
-  let nonTrivial = 0
-  for (let i = 0; i < sampleCount; i += 1) {
-    const raw = view.getInt16(i * 2, true)
-    const normalized = raw / 32768
-    const abs = Math.abs(normalized)
-    if (abs > peak) peak = abs
-    if (abs > 0.001) nonTrivial += 1
-    sumSquares += normalized * normalized
-  }
-  const rms = Math.sqrt(sumSquares / sampleCount)
-  const nonTrivialRatio = nonTrivial / sampleCount
-  return rms < 0.001 && peak < 0.005 && nonTrivialRatio < 0.02
 }
 
 export async function POST(req: NextRequest) {
@@ -108,8 +69,23 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Resolved once, outside the try, so the catch below can report which
+    // provider failed without re-invoking a resolver that may itself be what
+    // threw — that turned a real transcription error into a generic 500.
+    let resolvedProvider
     try {
-      const resolvedProvider = resolveTranscriptionProvider()
+      resolvedProvider = resolveTranscriptionProvider()
+    } catch (error) {
+      const pipelineError = toPipelineError(error, {
+        code: "config_error",
+        message: "No transcription provider is configured",
+        recoverable: false,
+      })
+      transcriptionSessionStore.emitError(sessionId, pipelineError)
+      return jsonError(500, pipelineError.code, pipelineError.message, pipelineError.recoverable)
+    }
+
+    try {
       const startedAtMs = Date.now()
       const transcript = await transcribeWithResolvedProvider(Buffer.from(arrayBuffer), `segment-${seqNo}.wav`, resolvedProvider)
       const latencyMs = Date.now() - startedAtMs
@@ -141,7 +117,6 @@ export async function POST(req: NextRequest) {
       })
     } catch (error) {
       console.error("Segment audio processing failed", error)
-      const resolvedProvider = resolveTranscriptionProvider()
       const pipelineError = toPipelineError(error, {
         code: "api_error",
         message: "Transcription API failure",

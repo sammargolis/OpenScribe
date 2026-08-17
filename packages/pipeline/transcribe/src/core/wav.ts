@@ -52,7 +52,11 @@ export function parseWavHeader(buffer: ArrayBuffer): WavInfo {
       break
     }
 
-    offset = chunkStart + chunkSize
+    // RIFF chunks are word-aligned: an odd-sized chunk is followed by a pad
+    // byte that is not counted in chunkSize. Without this, a WAV carrying an
+    // odd-length metadata chunk (LIST/INFO is common) lands one byte off and
+    // the "data" chunk is never found.
+    offset = chunkStart + chunkSize + (chunkSize % 2)
   }
 
   if (!sampleRate || !numChannels || !bitDepth || !dataBytes) {
@@ -70,4 +74,60 @@ export function parseWavHeader(buffer: ArrayBuffer): WavInfo {
     durationMs,
     dataBytes,
   }
+}
+
+/** Locate the PCM payload inside a WAV buffer, clamped to the real byte length. */
+export function getWavDataChunk(buffer: ArrayBuffer): { offset: number; size: number } | null {
+  if (buffer.byteLength < 44) return null
+  const view = new DataView(buffer)
+  let offset = 12
+  while (offset + 8 <= buffer.byteLength) {
+    const chunkId = readString(view, offset, 4)
+    const chunkSize = view.getUint32(offset + 4, true)
+    const chunkStart = offset + 8
+    if (chunkId === "data") {
+      return { offset: chunkStart, size: Math.min(chunkSize, buffer.byteLength - chunkStart) }
+    }
+    offset = chunkStart + chunkSize + (chunkSize % 2)
+  }
+  return null
+}
+
+/**
+ * Cheap energy heuristic for "this capture contains no real signal".
+ *
+ * Only ever an advisory signal — quiet speech still transcribes, so callers
+ * must not reject audio on this alone.
+ *
+ * Strided rather than exhaustive: a 30-minute 16kHz mono recording is ~28.8M
+ * samples, and scanning every one blocked the Next server's event loop (and
+ * therefore the SSE progress stream) for the duration. RMS and peak over a
+ * few thousand evenly spaced samples answer "is this silence?" just as well.
+ */
+export function isLikelySilentPcm16(buffer: ArrayBuffer, maxSamplesToInspect = 20000): boolean {
+  const data = getWavDataChunk(buffer)
+  if (!data || data.size < 2) return true
+
+  const view = new DataView(buffer, data.offset, data.size)
+  const sampleCount = Math.floor(data.size / 2)
+  if (sampleCount === 0) return true
+
+  const stride = Math.max(1, Math.ceil(sampleCount / maxSamplesToInspect))
+
+  let sumSquares = 0
+  let peak = 0
+  let nonTrivial = 0
+  let inspected = 0
+  for (let i = 0; i < sampleCount; i += stride) {
+    const normalized = view.getInt16(i * 2, true) / 32768
+    const abs = Math.abs(normalized)
+    if (abs > peak) peak = abs
+    if (abs > 0.001) nonTrivial += 1
+    sumSquares += normalized * normalized
+    inspected += 1
+  }
+
+  const rms = Math.sqrt(sumSquares / inspected)
+  const nonTrivialRatio = nonTrivial / inspected
+  return rms < 0.001 && peak < 0.005 && nonTrivialRatio < 0.02
 }
