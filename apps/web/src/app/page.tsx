@@ -443,7 +443,14 @@ function HomePageContent() {
 
       if (showPromptOnFailure) {
         const code = result?.code || result?.errorCode || "MIXED_RUNTIME_NOT_READY"
-        const message = result?.userMessage || result?.error || "Mixed runtime is not ready."
+        const reason = (result as { details?: { reason?: string; whisperStatus?: { reason?: string } } })?.details?.reason
+          || (result as { details?: { whisperStatus?: { reason?: string } } })?.details?.whisperStatus?.reason
+        let message = result?.userMessage || result?.error || "Mixed runtime is not ready."
+        if (code === "STARTING" || reason === "STARTING") {
+          message = "Whisper is still initializing in the background. Retry in a few seconds."
+        } else if (code === "MODEL_DOWNLOAD_FAILED" || reason === "MODEL_DOWNLOAD_FAILED") {
+          message = "Whisper model download failed. Check your network connection and retry setup."
+        }
         setMixedRuntimePromptCode(code)
         setMixedRuntimePromptMessage(message)
         setShowMixedRuntimePrompt(true)
@@ -467,7 +474,7 @@ function HomePageContent() {
         code: "LOCAL_BACKEND_UNAVAILABLE",
         userMessage: "Local backend is unavailable on this machine.",
       }
-      setLocalRuntimePromptCode(payload.code)
+      setLocalRuntimePromptCode(payload.code || "LOCAL_BACKEND_UNAVAILABLE")
       setLocalRuntimePromptMessage(payload.userMessage || "Local runtime is unavailable.")
       setShowLocalRuntimePrompt(true)
       return { ok: false, payload }
@@ -481,8 +488,16 @@ function HomePageContent() {
         setLocalRuntimePromptCode("")
         return { ok: true, payload: result }
       }
-      const message = result?.userMessage || result?.error || "Local runtime is not ready."
-      setLocalRuntimePromptCode(result?.code || result?.errorCode || "LOCAL_RUNTIME_NOT_READY")
+      const code = result?.code || result?.errorCode || "LOCAL_RUNTIME_NOT_READY"
+      const reason = (result as { details?: { reason?: string; whisperStatus?: { reason?: string } } })?.details?.reason
+        || (result as { details?: { whisperStatus?: { reason?: string } } })?.details?.whisperStatus?.reason
+      let message = result?.userMessage || result?.error || "Local runtime is not ready."
+      if (code === "STARTING" || reason === "STARTING") {
+        message = "Whisper is still initializing in the background. Retry in a few seconds."
+      } else if (code === "MODEL_DOWNLOAD_FAILED" || reason === "MODEL_DOWNLOAD_FAILED") {
+        message = "Whisper model download failed. Check your network connection and retry setup."
+      }
+      setLocalRuntimePromptCode(code)
       setLocalRuntimePromptMessage(message)
       setShowLocalRuntimePrompt(true)
       return { ok: false, payload: result }
