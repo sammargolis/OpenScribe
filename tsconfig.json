@@ -69,6 +69,12 @@
       "@llm-medgemma/*": [
         "packages/llm-medgemma/src/*"
       ],
+      "@openclaw": [
+        "packages/openclaw/src/index.ts"
+      ],
+      "@openclaw/*": [
+        "packages/openclaw/src/*"
+      ],
       "@medgemma-scribe": [
         "packages/pipeline/medgemma-scribe/src/index.ts"
       ],

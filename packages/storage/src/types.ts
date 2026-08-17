@@ -44,6 +44,12 @@ export type AuditEventType =
   | "settings.preferences_updated"
   | "audit.exported"
   | "audit.purged"
+  // OpenClaw experimental POC (note -> suggested actions). Metadata carries
+  // action types, counts, confidences and block reasons only — never note text.
+  | "openclaw.actions_proposed"
+  | "openclaw.action_executed"
+  | "openclaw.action_blocked"
+  | "openclaw.planner_failed"
 
 /**
  * Audit log entry for HIPAA compliance

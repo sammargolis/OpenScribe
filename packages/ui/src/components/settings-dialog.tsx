@@ -7,6 +7,23 @@ import { Label } from "@ui/lib/ui/label"
 import type { NoteLength, ProcessingMode } from "@storage/preferences"
 import { getAuditRetentionDays, setAuditRetentionDays, purgeAllAuditLogs } from "@storage/audit-log"
 import { AuditLogViewer } from "./audit-log-viewer"
+// OpenClaw experimental POC (issue #35) — kept as a separate import so the POC
+// is easy to remove in one pass.
+import type { OpenClawMode } from "@storage/preferences"
+
+const OPENCLAW_MODE_OPTIONS: Array<{ value: OpenClawMode; label: string; description: string }> = [
+  { value: "off", label: "Off (Default)", description: "Nothing extra happens after a note is generated." },
+  {
+    value: "suggest_only",
+    label: "Suggest Only",
+    description: "Shows a Claw Report of proposed actions. Never executes anything.",
+  },
+  {
+    value: "tiny_actions_only",
+    label: "Tiny Actions Only",
+    description: "Runs allowlisted local-only actions (task, reminder, tag). Everything else is blocked.",
+  },
+]
 
 interface SettingsDialogProps {
   isOpen: boolean
@@ -28,6 +45,9 @@ interface SettingsDialogProps {
   lastMicReadinessMetrics?: { rms: number; peak: number } | null
   lastFailureCode?: string
   onRunMicrophoneCheck: () => Promise<void>
+  /** OpenClaw experimental POC (issue #35). */
+  openClawMode: OpenClawMode
+  onOpenClawModeChange: (mode: OpenClawMode) => void
 }
 
 export function SettingsDialog({
@@ -50,6 +70,8 @@ export function SettingsDialog({
   lastMicReadinessMetrics,
   lastFailureCode,
   onRunMicrophoneCheck,
+  openClawMode,
+  onOpenClawModeChange,
 }: SettingsDialogProps) {
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
@@ -330,6 +352,43 @@ export function SettingsDialog({
               >
                 Purge All Logs
               </Button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-border" />
+
+          {/* OpenClaw Mode — experimental POC (issue #35) */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Label className="text-base font-medium text-foreground">OpenClaw Mode</Label>
+              <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-500">
+                Experimental POC
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              A for-fun experiment: after a note is generated, OpenClaw reads it and proposes tiny
+              operational follow-ups (a local task, a local reminder, a local tag).
+            </p>
+            <p className="text-xs font-medium text-amber-700 dark:text-amber-500">
+              Not for clinical decision-making. Not production automation. Suggestions are unverified
+              model output, actions are local-only, and anything outside the allowlist is blocked.
+            </p>
+            <div className="space-y-2">
+              {OPENCLAW_MODE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => onOpenClawModeChange(option.value)}
+                  className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
+                    openClawMode === option.value
+                      ? "border-foreground bg-accent"
+                      : "border-border hover:border-muted-foreground"
+                  }`}
+                >
+                  <div className="font-medium text-foreground">{option.label}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{option.description}</div>
+                </button>
+              ))}
             </div>
           </div>
         </div>
