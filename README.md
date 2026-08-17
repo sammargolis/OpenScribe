@@ -237,6 +237,58 @@ rm -rf node_modules pnpm-lock.yaml && pnpm install
 
 ---
 
+## Note Templates
+
+A note template is the markdown skeleton the model fills in. Pick one in
+**Settings → Note Template**; the choice is stored locally and applies to every
+new encounter.
+
+| Option | What you get |
+| --- | --- |
+| **Default** | History and Physical: Chief Complaint, HPI, Review of Systems, Past Medical History, Medications |
+| **SOAP** | Subjective (CC / HPI / ROS), Objective (Physical Examination), Assessment, Plan |
+| **Custom** | Your own markdown, edited in the Settings text area |
+
+Presets live in `packages/llm/src/prompts/clinical-note/templates/index.ts`. The
+custom template stays on your device, in the same local preferences store as
+note length and processing mode.
+
+### Writing a custom template
+
+Use markdown ATX headings to define the structure:
+
+- `#` — the note title (one per template, e.g. `# Cardiology Follow-Up`)
+- `##` — a section; each one is parsed as a separate note section
+- `###` — a subsection, kept inside its parent section
+
+```markdown
+# Cardiology Follow-Up
+
+## Reason for Visit
+
+## Interval History
+
+## Medications
+### Cardiac
+### Other
+
+## Assessment and Plan
+```
+
+Section names are free text, so add specialty sections and drop the ones you do
+not use. Content under a heading is optional — the model fills sections from the
+transcript and omits what the transcript does not support.
+
+A custom template must be non-empty and contain at least one markdown heading.
+If it is blank or heading-less, note generation logs a warning and falls back to
+the Default template instead of failing.
+
+Selecting **Default** keeps the existing behavior where a visit type of
+"problem visit" maps to the SOAP structure. Choosing **SOAP** or **Custom**
+overrides the visit type for every encounter.
+
+---
+
 ## Purpose and Philosophy
 
 OpenScribe exists to provide a simple, open-source alternative to cloud dependent clinical documentation tools. The project is built on core principles:

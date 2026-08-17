@@ -16,6 +16,28 @@ Standard clinical note format with six core sections:
 ### `soap.md`
 SOAP (Subjective/Objective/Assessment/Plan) note format, organizing sections hierarchically.
 
+## Preset vs. Custom Templates
+
+Two ways to change note structure:
+
+- **Presets** (`default`, `soap`) are code, registered in `TEMPLATES` in `index.ts` and shipped with the app.
+- **A custom template** is user markdown, authored in Settings → Note Template and stored in local preferences (`noteTemplateId: "custom"` + `customNoteTemplate`). No code change or rebuild required.
+
+`resolveTemplate({ templateId, customTemplate })` turns a selection into the markdown that gets embedded in the system prompt:
+
+```typescript
+import { resolveTemplate } from '@llm/prompts/clinical-note/templates';
+
+resolveTemplate({ templateId: 'soap' })                                  // SOAP_TEMPLATE markdown
+resolveTemplate({ templateId: 'custom', customTemplate: '# My Note\n' }) // the user's markdown
+resolveTemplate({ templateId: 'custom', customTemplate: '  ' })          // DEFAULT_TEMPLATE (warns)
+resolveTemplate({ templateId: 'unknown' })                               // DEFAULT_TEMPLATE (warns)
+```
+
+A custom template is valid when it is non-empty after trimming and contains at least one markdown ATX heading (`#`, `##`, `###`). Anything else falls back to `DEFAULT_TEMPLATE` deterministically — resolution never throws.
+
+Always pass resolved markdown (not an id) as the `template` field of a note-generation request. `getSystemPrompt` treats `template` as raw markdown.
+
 ## Creating Custom Templates
 
 ### 1. Add Template to index.ts
