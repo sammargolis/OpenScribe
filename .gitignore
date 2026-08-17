@@ -26,3 +26,18 @@ yarn-error.log*
 local-only/openscribe-backend/ollama_startup_report.json
 local-only/openscribe-backend/recorder_state.json
 local-only/openscribe-backend/config.json
+
+# Key material. Never commit these to a public repo.
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_ecdsa
+id_ed25519
+local-only/*.key
+local-only/*.pem
+
+# Local git worktrees kept inside the repo
+.worktrees/
