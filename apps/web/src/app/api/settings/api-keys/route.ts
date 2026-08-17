@@ -3,6 +3,7 @@ import { promises as fs } from "fs"
 import path from "path"
 import crypto from "crypto"
 import { writeAuditEntry } from "@storage/audit-log"
+import { getApiKeysConfigPath, getApiKeysEncryptionKeyPath } from "@storage/server-api-keys"
 
 // Encryption configuration
 const ALGORITHM = "aes-256-gcm"
@@ -15,24 +16,35 @@ const KEY_LENGTH = 32
  * so we store an encrypted key in a separate file.
  */
 async function getEncryptionKey(): Promise<Buffer> {
-  const configDir = path.dirname(getConfigPath())
-  const keyPath = path.join(configDir, ".encryption-key")
-  
+  const keyPath = getApiKeysEncryptionKeyPath()
+  const configDir = path.dirname(keyPath)
+
   try {
     // Try to read existing key
     const keyData = await fs.readFile(keyPath)
+    if (keyData.length !== KEY_LENGTH) {
+      throw new Error(
+        `Encryption key at ${keyPath} is ${keyData.length} bytes, expected ${KEY_LENGTH}`,
+      )
+    }
     return keyData
-  } catch {
+  } catch (error) {
+    // A wrong-length key means an existing, undecryptable key file. Regenerating
+    // would silently orphan the stored keys, so surface it instead.
+    if (error instanceof Error && error.message.includes("expected")) {
+      throw error
+    }
+
     // Generate new key
     const key = crypto.randomBytes(KEY_LENGTH)
-    
+
     // Ensure directory exists
     try {
       await fs.mkdir(configDir, { recursive: true })
     } catch {
       // Directory may already exist or not be creatable yet.
     }
-    
+
     // Store key with restrictive permissions
     await fs.writeFile(keyPath, key, { mode: 0o600 })
     return key
@@ -56,47 +68,13 @@ async function encryptData(plaintext: string): Promise<string> {
   return `enc.v2.${iv.toString("base64")}.${authTag.toString("base64")}.${encrypted.toString("base64")}`
 }
 
-/**
- * Decrypt API keys using AES-256-GCM
- */
-async function decryptData(payload: string): Promise<string> {
-  const parts = payload.split(".")
-  
-  // Check for encrypted format
-  if (parts.length === 5 && parts[0] === "enc" && parts[1] === "v2") {
-    const key = await getEncryptionKey()
-    const iv = Buffer.from(parts[2], "base64")
-    const authTag = Buffer.from(parts[3], "base64")
-    const encrypted = Buffer.from(parts[4], "base64")
-    
-    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv)
-    decipher.setAuthTag(authTag)
-    
-    let decrypted = decipher.update(encrypted)
-    decrypted = Buffer.concat([decrypted, decipher.final()])
-    
-    return decrypted.toString("utf8")
-  }
-  
-  // Legacy unencrypted format - return as-is and will be re-encrypted on next save
-  return payload
-}
+// Decryption deliberately lives only in @storage/server-api-keys. This route
+// writes; it never reads keys back out. See the note where GET used to be.
 
-// Get the app data directory for storing config
+// Where to store config. Shared with the server-side reader so the write path
+// and the read path can never diverge.
 function getConfigPath(): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { app } = require("electron")
-    if (app && app.getPath) {
-      // Electron environment
-      const userDataPath = app.getPath("userData")
-      return path.join(userDataPath, "api-keys.json")
-    }
-  } catch {
-    // Electron not available (development or build time)
-  }
-  // Development environment - use temp directory
-  return path.join(process.cwd(), ".api-keys.json")
+  return getApiKeysConfigPath()
 }
 
 export async function POST(req: NextRequest) {
@@ -153,30 +131,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
-  try {
-    const configPath = getConfigPath()
-
-    try {
-      const fileContent = await fs.readFile(configPath, "utf-8")
-      
-      // Decrypt the data
-      const decrypted = await decryptData(fileContent)
-      const keys = JSON.parse(decrypted)
-      
-      return NextResponse.json(keys)
-    } catch {
-      // File doesn't exist or is invalid, return empty keys
-      return NextResponse.json({
-        openaiApiKey: "",
-        anthropicApiKey: "",
-      })
-    }
-  } catch (error) {
-    console.error("Failed to load API keys:", error)
-    return NextResponse.json(
-      { error: "Failed to load API keys" },
-      { status: 500 }
-    )
-  }
-}
+/**
+ * Deliberately no GET handler.
+ *
+ * This route used to expose a GET that decrypted api-keys.json and returned the
+ * plaintext openaiApiKey/anthropicApiKey in its JSON body. Nothing in the app
+ * ever called it — the client reads keys from its own encrypted local store via
+ * @storage/api-keys, and server code reads the file directly through
+ * @storage/server-api-keys. It was an unauthenticated read oracle on the
+ * loopback Next server that handed out the user's provider credentials to any
+ * local process, which defeats the point of encrypting them at rest.
+ *
+ * If a presence check is needed, use /api/settings/mixed-auth-status, which
+ * returns only a boolean and the key's source.
+ */

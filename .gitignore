@@ -28,6 +28,8 @@ local-only/openscribe-backend/recorder_state.json
 local-only/openscribe-backend/config.json
 
 # Key material. Never commit these to a public repo.
+.api-keys.json
+.encryption-key
 *.key
 *.pem
 *.p12

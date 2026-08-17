@@ -4,7 +4,7 @@
  */
 
 import { readFileSync } from "fs"
-import { join } from "path"
+import { dirname, join } from "path"
 import crypto from "crypto"
 
 const ALGORITHM = "aes-256-gcm"
@@ -24,14 +24,8 @@ function isPlaceholderKey(raw: string | undefined): boolean {
 }
 
 function getEncryptionKeySync(): Buffer {
-  const configDir = typeof process !== "undefined" && process.env.NODE_ENV === "production"
-    ? getDesktopUserDataPath()
-    : process.cwd()
-  
-  const keyPath = join(configDir, ".encryption-key")
-  
   try {
-    return readFileSync(keyPath)
+    return readFileSync(getApiKeysEncryptionKeyPath())
   } catch {
     // Key doesn't exist yet (first run) - API routes will create it
     // Return empty buffer to trigger fallback to env var
@@ -69,7 +63,17 @@ function decryptDataSync(payload: string): string {
   return payload
 }
 
-function getConfigPath(): string {
+/**
+ * Resolve the on-disk location of the API key file.
+ *
+ * This is the single source of truth for both the reader (this module) and the
+ * writer (the /api/settings/api-keys route). They previously computed the path
+ * independently — the route probed for `require("electron")`, which always
+ * fails because the Next server runs as a plain Node child process, so the
+ * packaged app wrote keys to process.cwd() while this reader looked in
+ * userData. Saved keys were silently never picked up.
+ */
+export function getApiKeysConfigPath(): string {
   // In production (Electron), use userData path
   // In development, use .api-keys.json in project root
   if (typeof process !== "undefined" && process.env.NODE_ENV === "production") {
@@ -78,6 +82,15 @@ function getConfigPath(): string {
 
   // Development fallback
   return join(process.cwd(), ".api-keys.json")
+}
+
+/** Location of the AES key protecting the API key file. Must sit beside it. */
+export function getApiKeysEncryptionKeyPath(): string {
+  return join(dirname(getApiKeysConfigPath()), ".encryption-key")
+}
+
+function getConfigPath(): string {
+  return getApiKeysConfigPath()
 }
 
 export type MixedModeAuthSource = "server_file" | "env" | "none"
