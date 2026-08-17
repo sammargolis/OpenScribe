@@ -45,6 +45,11 @@ except ImportError:
     OllamaSummarizer = None
 from src.config import get_config, get_backend_data_dir
 
+try:
+    from src import whisper_models
+except ImportError:
+    whisper_models = None
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -1372,22 +1377,72 @@ def set_telemetry(enabled):
 
 
 @cli.command()
-def download_whisper_model():
+@click.option('--model', 'model_name', default=DEFAULT_WHISPER_MODEL, show_default=True,
+              help='Whisper model to download')
+def download_whisper_model(model_name):
     """Download the Whisper transcription model"""
-    print("Downloading Whisper model...")
+    if whisper_models is None:
+        # stderr, not stdout: the Electron shell only surfaces stderr in the
+        # error it hands back to the renderer.
+        print("ERROR: Whisper model support module unavailable (broken install)", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Downloading Whisper model: {model_name}")
+
+    last_percent = -1
+
+    def report(written, total):
+        nonlocal last_percent
+        if total <= 0:
+            return
+        percent = int(written / total * 100)
+        if percent >= last_percent + 5:
+            last_percent = percent
+            print(f"Downloading Whisper model {model_name}: {percent}%", flush=True)
 
     try:
-        from pywhispercpp.model import Model as WhisperCppModel
-
-        # This will trigger the model download if not present
-        print("Initializing Whisper model (will download if needed)...")
-        model = WhisperCppModel(DEFAULT_WHISPER_MODEL)
-        print("SUCCESS: Whisper model ready")
-
-    except Exception as e:
-        print(f"ERROR: Failed to download Whisper model: {e}")
-        import sys
+        target_dir = whisper_models.resolve_models_dir(create=True)
+        print(f"Whisper model directory: {target_dir}", flush=True)
+        model_path = whisper_models.ensure_model(model_name, progress=report)
+    except whisper_models.WhisperModelError as exc:
+        print(
+            f"ERROR: Failed to download Whisper model ({exc.cause}): {exc}",
+            file=sys.stderr,
+        )
+        print(json.dumps({
+            "success": False,
+            "model": model_name,
+            "cause": exc.cause,
+            "error": str(exc),
+            "path": exc.path,
+        }))
         sys.exit(1)
+    except Exception as exc:
+        print(f"ERROR: Failed to download Whisper model: {exc}", file=sys.stderr)
+        print(json.dumps({"success": False, "model": model_name, "cause": "unknown", "error": str(exc)}))
+        sys.exit(1)
+
+    print("SUCCESS: Whisper model ready")
+    print(json.dumps({"success": True, "model": model_name, "path": str(model_path)}))
+
+
+@cli.command(name='whisper-doctor')
+@click.option('--model', 'model_name', default=DEFAULT_WHISPER_MODEL, show_default=True,
+              help='Whisper model to inspect')
+def whisper_doctor(model_name):
+    """Print Whisper runtime diagnostics as JSON (model cache, backends, paths)."""
+    if whisper_models is None:
+        print(json.dumps({
+            "success": False,
+            "error": "whisper_models module unavailable",
+            "model": model_name,
+        }))
+        sys.exit(1)
+
+    payload = whisper_models.describe(model_name)
+    payload["success"] = True
+    payload["transcriber_importable"] = WhisperTranscriber is not None
+    print(json.dumps(payload, indent=2))
 
 
 @cli.command()
@@ -1566,12 +1621,56 @@ def whisper_server(host, port, model_size, backend):
     os.environ["OPENSCRIBE_WHISPER_BACKEND"] = backend
     os.environ.setdefault("OPENSCRIBE_WHISPER_GPU", "1")
 
-    transcriber = WhisperTranscriber(model_size=model_size)
+    # Load the transcriber on a background thread so the HTTP port binds
+    # immediately. Building it eagerly downloads the ggml model first, which
+    # means /health cannot answer for minutes on a first-ever run and the
+    # Electron shell reports WHISPER_UNHEALTHY for a service that is fine.
+    state = {"transcriber": None, "stage": "starting", "error": "", "cause": ""}
+
+    def load_transcriber():
+        try:
+            if whisper_models is not None and whisper_models.find_model(model_size) is None:
+                state["stage"] = "downloading_model"
+                print(f"Whisper model {model_size} not cached; downloading before first transcription", flush=True)
+            else:
+                state["stage"] = "loading_model"
+            state["transcriber"] = WhisperTranscriber(model_size=model_size)
+            state["stage"] = "ready"
+            print("Whisper transcriber ready", flush=True)
+        except Exception as exc:
+            state["stage"] = "failed"
+            state["error"] = str(exc)
+            state["cause"] = getattr(exc, "cause", "") or "model_load_failed"
+            print(f"ERROR: Whisper transcriber failed to load: {exc}", file=sys.stderr, flush=True)
+
+    loader = threading.Thread(target=load_transcriber, name="whisper-model-loader", daemon=True)
+    loader.start()
+
     app = FastAPI(title="OpenScribe Whisper Server")
+
+    @app.get("/status")
+    async def status():
+        """Always 200: lets the shell distinguish "starting" from "dead"."""
+        transcriber = state["transcriber"]
+        return {
+            "ready": transcriber is not None,
+            "stage": state["stage"],
+            "model": model_size,
+            "backend": backend,
+            "error": state["error"],
+            "cause": state["cause"],
+            **(transcriber.get_backend_info() if transcriber else {}),
+        }
 
     @app.get("/health")
     async def health():
-        return {"status": "healthy", **transcriber.get_backend_info()}
+        transcriber = state["transcriber"]
+        if transcriber is None:
+            raise HTTPException(
+                status_code=503,
+                detail={"stage": state["stage"], "error": state["error"], "cause": state["cause"]},
+            )
+        return {"status": "healthy", "stage": state["stage"], **transcriber.get_backend_info()}
 
     @app.post("/v1/audio/transcriptions")
     async def transcribe_audio(
@@ -1580,6 +1679,13 @@ def whisper_server(host, port, model_size, backend):
         response_format: str | None = Form(default="json"),
     ):
         del model
+        transcriber = state["transcriber"]
+        if transcriber is None:
+            raise HTTPException(
+                status_code=503,
+                detail={"stage": state["stage"], "error": state["error"], "cause": state["cause"]},
+            )
+
         data = await file.read()
         if not data:
             raise HTTPException(status_code=400, detail="Empty audio file")
@@ -1602,7 +1708,7 @@ def whisper_server(host, port, model_size, backend):
             except Exception:
                 pass
 
-    print(f"Starting Whisper server on http://{host}:{port} (model={model_size}, backend={backend})")
+    print(f"Starting Whisper server on http://{host}:{port} (model={model_size}, backend={backend})", flush=True)
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
