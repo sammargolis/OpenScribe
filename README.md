@@ -1,5 +1,7 @@
 <div align="center">
 
+Official website: https://openscribe.org
+
 <img src=".github/openscribe-banner.png" alt="OpenScribe Banner" width="5%" />
 
 # OpenScribe
@@ -490,3 +492,12 @@ OpenScribe
 GitHub: https://github.com/sammargolis/OpenScribe
 Maintainer: Sam Margolis (@sammargolis)
 ```
+
+## Maintainer
+
+[Sam Margolis](https://profiles.stanford.edu/sammargolis) — Founder and Lead Maintainer
+
+[Stanford profile](https://profiles.stanford.edu/sammargolis) · [GitHub](https://github.com/sammargolis)
+
+Sam is a physician-in-training and computer scientist conducting research at Stanford and an MD candidate at UCLA.
+His academic publications appear under Samuel Margolis and Samuel J. Margolis.
