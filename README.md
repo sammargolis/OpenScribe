@@ -311,7 +311,7 @@ does not perform speech-to-text. See
 ## Project Resources
 
 - **GitHub**: [sammargolis/OpenScribe](https://github.com/sammargolis/OpenScribe)
-- **Maintainer**: [@sammargolis](https://github.com/sammargolis)
+- **Maintainer**: [Sam Margolis](https://sammargolis.org/), founder and lead maintainer
 - **Architecture**: [architecture.md](./architecture.md)
 - **Tests**: [packages/llm](./packages/llm/src/__tests__/), [packages/pipeline](./packages/pipeline/)
 
@@ -490,14 +490,14 @@ SOFTWARE.
 ```
 OpenScribe
 GitHub: https://github.com/sammargolis/OpenScribe
-Maintainer: Sam Margolis (@sammargolis)
+Maintainer: Sam Margolis (https://sammargolis.org/)
 ```
 
 ## Maintainer
 
-[Sam Margolis](https://profiles.stanford.edu/sammargolis) — Founder and Lead Maintainer
+[Sam Margolis](https://sammargolis.org/) — Founder and Lead Maintainer
 
-[Stanford profile](https://profiles.stanford.edu/sammargolis) · [GitHub](https://github.com/sammargolis)
+[Website](https://sammargolis.org/) · [Stanford profile](https://profiles.stanford.edu/sammargolis) · [GitHub](https://github.com/sammargolis)
 
 Sam is a physician-in-training and computer scientist conducting research at Stanford and an MD candidate at UCLA.
 His academic publications appear under Samuel Margolis and Samuel J. Margolis.
