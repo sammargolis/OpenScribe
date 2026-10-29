@@ -495,7 +495,7 @@ Maintainer: Sam Margolis (@sammargolis)
 
 ## Maintainer
 
-[Sam Margolis](https://profiles.stanford.edu/sammargolis) — Founder and Lead Maintainer
+[Sam Margolis](sammargolis.org) — Founder and Lead Maintainer
 
 [Stanford profile](https://profiles.stanford.edu/sammargolis) · [GitHub](https://github.com/sammargolis)
 
